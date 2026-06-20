@@ -1,0 +1,16 @@
+# Nix build artifacts
+result
+result-*
+
+# Editor swap files
+.*.swp
+.*.swo
+.*.swn
+\#*\#
+
+# direnv
+.direnv
+.envrc
+
+# macOS
+.DS_Store
