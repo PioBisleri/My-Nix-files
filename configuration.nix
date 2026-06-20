@@ -9,6 +9,7 @@
     ./sys-modules/users.nix
     ./sys-modules/packages.nix
     ./sys-modules/virtualisation.nix
+    ./sys-modules/sddm.nix
   ];
 
 }

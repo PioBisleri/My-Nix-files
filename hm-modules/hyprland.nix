@@ -16,10 +16,18 @@
     # Window rules
     windowrule = match:class ^(floating-term)$, float on
     windowrule = match:class ^(floating-term)$, center on
+    windowrule = match:class ^(floating-term)$, size 840 520
+    windowrule = match:class ^(btop-term)$, float on
+    windowrule = match:class ^(btop-term)$, center on
     windowrule = match:class ^(org\.pulseaudio\.pavucontrol)$, float on
     windowrule = match:class ^(org\.pulseaudio\.pavucontrol)$, center on
+    windowrule = match:class ^(org\.pulseaudio\.pavucontrol)$, size 600 500
     windowrule = match:class ^(\.blueman-manager-wrapped)$, float on
     windowrule = match:class ^(\.blueman-manager-wrapped)$, center on
+    windowrule = match:class ^(\.blueman-manager-wrapped)$, size 800 600
+    windowrule = match:class ^(nm-connection-editor)$, float on
+    windowrule = match:class ^(nm-connection-editor)$, center on
+    windowrule = match:class ^(nm-connection-editor)$, size 700 550
 
     # Monitor
     monitor=,preferred,auto,1
@@ -30,10 +38,7 @@
     $screenshot = hyprshot -m region --output-file ~/Pictures/Screenshots/shot_$(date +%Y%m%d_%H%M%S).png
 
     # Autostart
-    exec-once = waybar
-    exec-once = awww-daemon
-    exec-once = bash -c 'l=/home/veer/.cache/current-wallpaper.jpg; mkdir -p "$(dirname "$l")"; [ ! -f "$l" ] && ln -sf /home/veer/Pictures/wallpaper/1524332.jpg "$l"; awww img "$l"'
-    exec-once = mako
+    exec-once = bash -c 'awww-daemon & sleep 0.3; SYMLINK=$HOME/.cache/current-wallpaper.jpg; mkdir -p "$(dirname "$SYMLINK")"; if ! [ -f "$SYMLINK" ]; then for f in "$HOME"/Pictures/wallpaper/*; do [ -f "$f" ] && ln -sf "$f" "$SYMLINK" && break; done; fi; awww restore 2>/dev/null || awww img --transition-type none "$SYMLINK"; waybar & mako &'
     exec-once = wl-paste --type text --watch cliphist store
     exec-once = wl-paste --type image --watch cliphist store
     exec-once = /run/current-system/sw/bin/polkit-gnome-authentication-agent-1
@@ -134,6 +139,12 @@
     # --- Mouse bindings ---
     bindm = $mod, mouse:272, movewindow
     bindm = $mod, mouse:273, resizewindow
+
+    # --- TTS / STT ---
+    bind = , F10, exec, ~/.config/waybar/scripts/tts-speak.sh
+    bind = SHIFT, F10, exec, ~/.config/waybar/scripts/tts-speak.sh --clipboard
+    bind = , F9, exec, voxtype record start
+    bindr = , F9, exec, voxtype record stop
 
     # --- Utilities ---
     bind = $mod, C, exec, hyprpicker -a

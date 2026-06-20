@@ -341,17 +341,15 @@ xdg.configFile."waybar/scripts/net-speed.sh" = {
       TX_SPEED=$(( (TX2 - TX1) / 1024 ))
 
       if [ "$RX_SPEED" -ge 1024 ]; then
-        RX_DISP=$(echo "scale=1; $RX_SPEED / 1024" | bc)
-        RX_DISP="''${RX_DISP}M"
+        RX_DISP="$((RX_SPEED / 1024)).$(((RX_SPEED % 1024) * 10 / 1024))MB"
       else
-        RX_DISP="''${RX_SPEED}K"
+        RX_DISP="''${RX_SPEED}KB"
       fi
 
       if [ "$TX_SPEED" -ge 1024 ]; then
-        TX_DISP=$(echo "scale=1; $TX_SPEED / 1024" | bc)
-        TX_DISP="''${TX_DISP}M"
+        TX_DISP="$((TX_SPEED / 1024)).$(((TX_SPEED % 1024) * 10 / 1024))MB"
       else
-        TX_DISP="''${TX_SPEED}K"
+        TX_DISP="''${TX_SPEED}KB"
       fi
 
       echo "{\"text\": \"$ICON_DOWN $RX_DISP $ICON_UP $TX_DISP\"}"

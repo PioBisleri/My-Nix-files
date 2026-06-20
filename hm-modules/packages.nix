@@ -32,6 +32,7 @@
     hypridle
     cliphist
     starship
+    tree
     bat
     wlogout
     playerctl
@@ -47,7 +48,8 @@
     bibata-cursors
     hyprpicker
     wf-recorder
-    impala
+    sddm-astronaut
+    blender
   ];
 
   home.pointerCursor = {

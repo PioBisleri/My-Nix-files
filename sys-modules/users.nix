@@ -3,7 +3,7 @@
   users.users."veer" = {
     isNormalUser = true;
     description = "Veer";
-    extraGroups = [ "networkmanager" "wheel" "vboxusers" ];
+    extraGroups = [ "networkmanager" "wheel" "vboxusers" "input" ];
     shell = pkgs.zsh;
   };
 

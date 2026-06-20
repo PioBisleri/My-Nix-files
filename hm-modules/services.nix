@@ -89,4 +89,54 @@
     };
   };
 
+  services.ssh-agent.enable = true;
+
+  systemd.user.services.voxtype = {
+    Unit = {
+      Description = "Voxtype push-to-talk voice-to-text daemon";
+      Documentation = "https://voxtype.io";
+      After = [ "graphical-session.target" ];
+      PartOf = [ "graphical-session.target" ];
+    };
+    Service = {
+      Type = "simple";
+      ExecStart = "${pkgs.voxtype-vulkan}/bin/voxtype daemon";
+      Restart = "on-failure";
+      RestartSec = 2;
+    };
+    Install = {
+      WantedBy = [ "graphical-session.target" ];
+    };
+  };
+
+  xdg.configFile."voxtype/config.toml" = {
+    force = true;
+    text = ''
+      state_file = "auto"
+
+      [hotkey]
+      enabled = false
+
+      [audio]
+      device = "default"
+      sample_rate = 16000
+      max_duration_secs = 60
+
+      [whisper]
+      model = "base.en"
+      language = "en"
+      threads = 6
+      translate = false
+
+      [output]
+      mode = "type"
+      fallback_to_clipboard = true
+      type_delay_ms = 0
+
+      [output.notification]
+      on_recording_start = true
+      on_recording_stop = true
+      on_transcription = true
+    '';
+  };
 }

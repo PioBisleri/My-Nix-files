@@ -6,7 +6,7 @@
 
   programs.firefox = {
     enable = true;
-      };
+  };
 
   environment.systemPackages = with pkgs; [
     vim
@@ -19,6 +19,10 @@
     obsidian
     python3
     btop
+    sherpa-onnx
+    voxtype-vulkan
+    wtype
+    libnotify
   ];
 
 }

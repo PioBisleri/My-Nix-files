@@ -23,11 +23,9 @@
       ":q" = "exit";
       la = "ls -la";
       l = "ls -l";
-      tree = "ls --tree";
       rm = "rm -i";
       cp = "cp -i";
       mv = "mv -i";
-      mkcd = "mkdir -p $1 && cd $1";
       df = "df -h";
       du = "du -h";
       free = "free -h";
@@ -62,6 +60,7 @@
     };
 
     initContent = ''
+      mkcd() { mkdir -p "$1" && cd "$1"; }
       fetch
       eval "$(starship init zsh)"
     '';
@@ -139,7 +138,7 @@
       [nix_shell]
       format = "[$symbol$state($name)]($style)"
       style = "bold lavender"
-      symbol = "❄"
+      symbol = ""
 
       [character]
       success_symbol = "[▶](bold mauve)"
