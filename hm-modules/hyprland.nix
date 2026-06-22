@@ -12,6 +12,7 @@
     env = VISUAL,nvim
     env = YAZI_EDITOR,nvim
     env = GDK_BACKEND,wayland,x11
+    env = NIXOS_OZONE_WL,1
 
     # Window rules
     windowrule = match:class ^(floating-term)$, float on
@@ -28,6 +29,9 @@
     windowrule = match:class ^(nm-connection-editor)$, float on
     windowrule = match:class ^(nm-connection-editor)$, center on
     windowrule = match:class ^(nm-connection-editor)$, size 700 550
+    windowrule = match:class ^(imv)$, float on
+    windowrule = match:class ^(imv)$, move 10 40
+    windowrule = match:class ^(imv)$, size 320 240
 
     # Monitor
     monitor=,preferred,auto,1
@@ -35,7 +39,7 @@
     # Programs
     $terminal = kitty
     $menu = wofi --show drun
-    $screenshot = hyprshot -m region --output-file ~/Pictures/Screenshots/shot_$(date +%Y%m%d_%H%M%S).png
+    $screenshot = hyprshot -m region
 
     # Autostart
     exec-once = bash -c 'awww-daemon & sleep 0.3; SYMLINK=$HOME/.cache/current-wallpaper.jpg; mkdir -p "$(dirname "$SYMLINK")"; if ! [ -f "$SYMLINK" ]; then for f in "$HOME"/Pictures/wallpaper/*; do [ -f "$f" ] && ln -sf "$f" "$SYMLINK" && break; done; fi; awww restore 2>/dev/null || awww img --transition-type none "$SYMLINK"; waybar & mako &'
@@ -59,14 +63,23 @@
 
     # --- Launcher shortcuts ---
     bind = $mod, E, exec, thunar
+    bind = $mod SHIFT, E, exec, wofi-emoji
     bind = $mod, T, exec, kitty --class floating-term -o initial_window_width=80c -o initial_window_height=24c
     bind = $mod SHIFT, B, exec, firefox --new-window
     bind = $mod, W, exec, ~/.config/waybar/scripts/wallpaper-select.sh
 
+    # --- Web apps ---
+    bind = $mod, A, exec, bash -c 'mkdir -p ~/.config/webapps/gemini && chromium --app=https://gemini.google.com --user-data-dir=~/.config/webapps/gemini'
+    bind = $mod, D, exec, bash -c 'mkdir -p ~/.config/webapps/discord && chromium --app=https://discord.com/app --user-data-dir=~/.config/webapps/discord'
+    bind = $mod, I, exec, bash -c 'mkdir -p ~/.config/webapps/instagram && chromium --app=https://instagram.com --user-data-dir=~/.config/webapps/instagram'
+    bind = $mod, N, exec, bash -c 'mkdir -p ~/.config/webapps/notebooklm && chromium --app=https://notebooklm.google.com --user-data-dir=~/.config/webapps/notebooklm'
+    bind = $mod SHIFT, Y, exec, bash -c 'mkdir -p ~/.config/webapps/ytmusic && chromium --app=https://music.youtube.com --user-data-dir=~/.config/webapps/ytmusic'
+    bind = $mod SHIFT, W, exec, bash -c 'mkdir -p ~/.config/webapps/whatsapp && chromium --app=https://web.whatsapp.com --user-data-dir=~/.config/webapps/whatsapp'
+
     # --- Screenshots ---
-    bind = $mod SHIFT, S, exec, hyprshot -m region --output-file ~/Pictures/Screenshots/shot_$(date +%Y%m%d_%H%M%S).png
-    bind = $mod, Print, exec, hyprshot -m output --output-file ~/Pictures/Screenshots/shot_$(date +%Y%m%d_%H%M%S).png
-    bind = , Print, exec, hyprshot -m window --output-file ~/Pictures/Screenshots/shot_$(date +%Y%m%d_%H%M%S).png
+    bind = $mod SHIFT, S, exec, ~/.config/waybar/scripts/screenshot.sh region
+    bind = $mod, Print, exec, ~/.config/waybar/scripts/screenshot.sh output
+    bind = , Print, exec, ~/.config/waybar/scripts/screenshot.sh window
 
     # --- Screen recording ---
     bind = $mod SHIFT, R, exec, bash -c 'pidof wf-recorder && pkill wf-recorder || wf-recorder -f ~/Pictures/Screenshots/rec_$(date +%Y%m%d_%H%M%S).mp4'

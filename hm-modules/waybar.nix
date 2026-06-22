@@ -41,25 +41,19 @@
           "on-click": "kitty --class floating-term -o initial_window_width=80c -o initial_window_height=24c -e btop"
         },
         "custom/memory": {
-          "format": "\uf233  {}%",
-          "exec": "free | awk '/^Mem:/ {printf \"%.0f\", $3/$2 * 100}'",
-          "interval": 30,
-          "tooltip": false,
-          "on-click": "~/.config/waybar/scripts/memory-manager.sh"
-        },
-        "custom/net-speed": {
           "return-type": "json",
-          "format": "{}",
-          "exec": "/home/veer/.config/waybar/scripts/net-speed.sh",
-          "interval": 2,
-          "tooltip": false
+          "format": "\uf233  {}",
+          "exec": "free | awk '/^Mem:/ {used=$3/1024/1024; total=$2/1024/1024; printf \"{\\\"text\\\": \\\"%.0f%%\\\", \\\"tooltip\\\": \\\"Used: %.1fGiB / %.1fGiB\\\"}\", $3/$2*100, used, total}'",
+          "interval": 30,
+          "tooltip": true,
+          "on-click": "~/.config/waybar/scripts/memory-manager.sh"
         },
         "network": {
           "format-wifi": "\uf1eb  {signalStrength}%",
           "format-ethernet": "\uf6ff  {ipaddr}",
           "format-disconnected": "\uf072  Disconnected",
           "tooltip-format": "{ifname} via {essid}",
-          "on-click": "kitty --class floating-term -o initial_window_width=80c -o initial_window_height=24c -e impala"
+          "on-click": "kitty --class floating-term -o initial_window_width=80c -o initial_window_height=24c -e nmtui connect"
         },
         "bluetooth": {
           "format": "\uf294",
@@ -406,5 +400,101 @@ Clear RAM Cache"
     executable = true;
   };
 
+
+
+
+
+
+
+  xdg.configFile."waybar/scripts/screenshot.sh" = {
+    text = ''
+      #!/usr/bin/env bash
+      DIR=/home/veer/Pictures/Screenshots
+      NAME=shot_$(date +%Y%m%d_%H%M%S).png
+      mkdir -p "$DIR"
+      FILE=$DIR/$NAME
+
+      case "''${1:-region}" in
+        region)  hyprshot -m region -o "$DIR" -f "$NAME" || exit 1 ;;
+        output)  hyprshot -m output -o "$DIR" -f "$NAME" || exit 1 ;;
+        window)  hyprshot -m window -o "$DIR" -f "$NAME" || exit 1 ;;
+      esac
+
+      notify-send -i "$FILE" -t 7000 "Screenshot" "Click preview to edit"
+      imv -s 0.15 -x "$FILE" 2>/dev/null &
+      IMV_PID=$!
+      (sleep 7; kill "$IMV_PID" 2>/dev/null) &
+      wait "$IMV_PID" 2>/dev/null
+      swappy -f "$FILE"
+    '';
+    executable = true;
+  };
+
+
+
+  xdg.configFile."waybar/scripts/tts-speak.sh" = {
+    text = ''
+      #!/usr/bin/env bash
+      set -u
+      CACHE_DIR=''${XDG_CACHE_HOME:-$HOME}/.cache/tts/kokoro
+      MODEL_DIR="$CACHE_DIR"
+      MODEL_URL="https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/kokoro-en-v0_19.tar.bz2"
+      MODEL_FILE="$MODEL_DIR/model.onnx"
+      TOKENS_FILE="$MODEL_DIR/tokens.txt"
+      DATA_DIR="$MODEL_DIR/espeak-ng-data"
+      VOICES_FILE="$MODEL_DIR/voices.bin"
+      SID=0
+      SHERPA="/run/current-system/sw/bin/sherpa-onnx-offline-tts"
+
+      if [ ! -f "$MODEL_FILE" ]; then
+        mkdir -p "$MODEL_DIR"
+        ARCHIVE="/tmp/kokoro.tar.bz2"
+        notify-send -t 5000 "TTS" "Downloading Kokoro model..."
+        curl -L -o "$ARCHIVE" "$MODEL_URL" 2>&1
+        if [ $? -ne 0 ]; then
+          notify-send -u critical "TTS" "Download failed!"
+          exit 1
+        fi
+        tar -xjf "$ARCHIVE" -C "$MODEL_DIR" --strip-components=1 2>/dev/null || tar -xjf "$ARCHIVE" -C "$MODEL_DIR" 2>/dev/null
+        rm -f "$ARCHIVE"
+        if [ ! -f "$MODEL_FILE" ]; then
+          notify-send -u critical "TTS" "Model extraction failed!"
+          exit 1
+        fi
+        notify-send -t 3000 "TTS" "Model ready!"
+      fi
+
+      MODE=''${1:-selection}
+      if [ "$MODE" = "--clipboard" ]; then
+        TEXT=$(wl-paste 2>/dev/null)
+        [ -z "$TEXT" ] && TEXT=$(wl-paste --primary 2>/dev/null)
+      else
+        notify-send -t 2000 "TTS" "Select text..."
+        sleep 0.5
+        TEXT=$(wl-paste --primary 2>/dev/null)
+        [ -z "$TEXT" ] && TEXT=$(wl-paste 2>/dev/null)
+        if [ -z "$TEXT" ] && command -v wtype &>/dev/null; then
+          wtype -M ctrl c -m ctrl 2>/dev/null
+          sleep 0.3
+          TEXT=$(wl-paste 2>/dev/null)
+        fi
+      fi
+
+      TEXT=$(echo "$TEXT" | head -c 500)
+      [ -z "$TEXT" ] && notify-send -t 3000 "TTS" "No text found" && exit 0
+
+      notify-send -t 2000 "TTS" "Generating speech..."
+      OUTPUT_WAV=/tmp/tts_output.wav
+      "$SHERPA" --kokoro-model="$MODEL_FILE" --kokoro-tokens="$TOKENS_FILE" --kokoro-data-dir="$DATA_DIR" --kokoro-voices="$VOICES_FILE" --sid="$SID" --num-threads=6 --output-filename="$OUTPUT_WAV" "$TEXT" 2>/dev/null
+
+      if [ -f "$OUTPUT_WAV" ]; then
+        pw-play "$OUTPUT_WAV" 2>/dev/null || aplay "$OUTPUT_WAV" 2>/dev/null || notify-send -u critical "TTS" "Playback failed"
+        rm -f "$OUTPUT_WAV"
+      else
+        notify-send -u critical "TTS" "Speech generation failed"
+      fi
+    '';
+    executable = true;
+  };
 
 }

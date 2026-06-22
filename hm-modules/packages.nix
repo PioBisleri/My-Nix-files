@@ -49,7 +49,9 @@
     hyprpicker
     wf-recorder
     sddm-astronaut
+    chromium
     blender
+    wofi-emoji
   ];
 
   home.pointerCursor = {
@@ -57,6 +59,45 @@
     package = pkgs.bibata-cursors;
     size = 24;
     gtk.enable = true;
+  };
+
+  xdg.desktopEntries = {
+    "gemini-web" = {
+      name = "Gemini";
+      exec = "chromium --app=https://gemini.google.com --user-data-dir=/home/veer/.config/webapps/gemini";
+      icon = "google-gemini";
+      categories = [ "Network" ];
+    };
+    "discord-web" = {
+      name = "Discord";
+      exec = "chromium --app=https://discord.com/app --user-data-dir=/home/veer/.config/webapps/discord";
+      icon = "discord";
+      categories = [ "Network" ];
+    };
+    "instagram-web" = {
+      name = "Instagram";
+      exec = "chromium --app=https://instagram.com --user-data-dir=/home/veer/.config/webapps/instagram";
+      icon = "instagram";
+      categories = [ "Network" ];
+    };
+    "notebooklm-web" = {
+      name = "NotebookLM";
+      exec = "chromium --app=https://notebooklm.google.com --user-data-dir=/home/veer/.config/webapps/notebooklm";
+      icon = "notebooklm";
+      categories = [ "Network" ];
+    };
+    "ytmusic-web" = {
+      name = "YouTube Music";
+      exec = "chromium --app=https://music.youtube.com --user-data-dir=/home/veer/.config/webapps/ytmusic";
+      icon = "youtube-music";
+      categories = [ "Network" ];
+    };
+    "whatsapp-web" = {
+      name = "WhatsApp";
+      exec = "chromium --app=https://web.whatsapp.com --user-data-dir=/home/veer/.config/webapps/whatsapp";
+      icon = "whatsapp";
+      categories = [ "Network" ];
+    };
   };
 
   xdg.configFile."yazi/yazi.toml" = {
@@ -70,6 +111,14 @@
       edit = [
         { run = 'nvim "$@"', block = true }
       ]
+    '';
+  };
+
+  xdg.configFile."swappy/config" = {
+    text = ''
+      [Default]
+      save_dir=/home/veer/Pictures/Screenshots
+      save_filename_format=shot_%Y%m%d_%H%M%S
     '';
   };
 
