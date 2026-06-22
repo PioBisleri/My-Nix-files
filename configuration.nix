@@ -1,4 +1,4 @@
-{ config, pkgs, ... }: {
+{ config, pkgs, vars, inputs, ... }: {
 
   imports = [
     ./hardware-configuration.nix
@@ -10,6 +10,8 @@
     ./sys-modules/packages.nix
     ./sys-modules/virtualisation.nix
     ./sys-modules/sddm.nix
+    ./sys-modules/gaming.nix
+    ./sys-modules/secrets.nix
   ];
 
 }

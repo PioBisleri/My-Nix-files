@@ -53,7 +53,7 @@
     # Mod key definition (MUST be before any bind using $mod)
     $mod = SUPER
     bind = $mod, Return, exec, $terminal
-    bind = $mod SHIFT, V, exec, ~/.config/waybar/scripts/clipboard.sh
+    bind = $mod SHIFT, V, exec, /home/veer/.config/waybar/scripts/clipboard.sh
     bind = $mod, B, exec, firefox
     bind = $mod, Q, killactive,
     bind = $mod, M, exit,
@@ -94,10 +94,9 @@
     bind = $mod SHIFT, L, exec, hyprctl dispatch dpms off
     bind = $mod ALT, R, exec, hyprctl reload
 
-    bind = CTRL SHIFT, Escape, exec, kitty -e btop
-
-    # --- Keybind reference ---
     bind = $mod, K, exec, ~/.config/waybar/scripts/keybinds.sh
+
+    bind = CTRL SHIFT, Escape, exec, kitty -e btop
 
     # --- Scratchpad ---
     bind = $mod, grave, togglespecialworkspace, scratchpad

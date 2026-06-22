@@ -1,4 +1,4 @@
-{ config, pkgs, inputs, ... }: {
+{ config, pkgs, inputs, vars, ... }: {
 
   home.stateVersion = "26.05";
 
@@ -14,6 +14,7 @@
     ./hm-modules/wofi.nix
     ./hm-modules/kitty.nix
     ./hm-modules/hyprlock.nix
+    ./hm-modules/secrets.nix
   ];
 
 }

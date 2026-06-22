@@ -23,6 +23,10 @@ The configuration is split into two layers: system-level NixOS modules under `sy
 - **Battery monitoring** with automatic power-saver profile switching.
 - **Backup** SSH agent enabled.
 - **Web application shortcuts** for Gemini, Discord, Instagram, NotebookLM, YouTube Music, and WhatsApp, each running as a dedicated Chromium app with isolated user data directories.
+- **Emoji picker** via wofi-emoji, keybound to Super+Shift+E.
+- **Keybind reference** — Super+K opens a Wofi window listing all current Hyprland keybindings.
+- **Secret management** with sops-nix, using age encryption backed by an ed25519 SSH key. Secrets are decrypted at activation time and mounted under `/run/secrets/`.
+- **Dedicated gaming module** with Steam (gamescope session, remote play), Gamemode, MangoHud overlay, Gamescope micro-compositor, osu-lazer, and Lutris game manager, plus kernel optimizations for modded games.
 
 ---
 
@@ -36,10 +40,15 @@ The configuration is split into two layers: system-level NixOS modules under `sy
 |-- hardware-configuration.nix        # Auto-generated hardware configuration (machine-specific)
 |-- home.nix                          # Home Manager module imports (user layer)
 |-- vars.nix                          # Centralized user-configurable variables
+|-- .sops.yaml                        # sops-nix age key mapping for encrypted secrets
 |-- .editorconfig                     # Editor style rules (2-space indent, UTF-8, LF)
 |-- .gitignore                        # Nix build artifacts, swap files, direnv
 |-- LICENSE                           # MIT license
 |-- README.md                         # This file
+|
+|-- secrets/                          # sops-nix encrypted secret files
+|   |-- system.yaml                   # System-level encrypted secrets
+|   |-- user.yaml                     # User-level encrypted secrets
 |
 |-- sys-modules/                      # System-level NixOS modules
 |   |-- base.nix                      # Bootloader, networking, timezone, flakes, unfree
@@ -50,6 +59,8 @@ The configuration is split into two layers: system-level NixOS modules under `sy
 |   |-- packages.nix                  # System packages, fonts, Firefox
 |   |-- virtualisation.nix            # VirtualBox host with Extension Pack
 |   |-- sddm.nix                      # SDDM theme: sddm-astronaut, Bibata cursor, numlock
+|   |-- gaming.nix                    # Steam, Gamescope, Gamemode, MangoHud, Lutris, osu-lazer, kernel tuning
+|   |-- secrets.nix                   # sops-nix system-level secret module
 |
 |-- hm-modules/                       # User-level Home Manager modules
     |-- packages.nix                  # User packages, cursor, desktop entries, Yazi config
@@ -60,9 +71,10 @@ The configuration is split into two layers: system-level NixOS modules under `sy
     |-- hyprland.nix                  # Full Hyprland configuration (keybinds, rules, animations)
     |-- hyprlock.nix                  # Lock screen with blur, clock, and date
     |-- kitty.nix                     # Kitty terminal with Catppuccin colors and blur
-    |-- waybar.nix                    # Waybar bar config, CSS styling, and 8 utility scripts
+    |-- waybar.nix                    # Waybar bar config, CSS styling, and 9 utility scripts
     |-- wofi.nix                      # Wofi launcher and wallpaper picker config
     |-- services.nix                  # Mako, Hypridle, battery monitor, SSH agent, Voxtype
+    |-- secrets.nix                   # sops-nix user-level secret module
 ```
 
 ---
@@ -133,6 +145,8 @@ A single file holding all user-specific values. Edit this file to adapt the conf
 
 These values are injected into both NixOS and Home Manager modules via `specialArgs` and `extraSpecialArgs` in `flake.nix`.
 
+The configuration also generates a dedicated ed25519 SSH key (`~/.ssh/id_ed25519`) which is converted to an age key for sops-nix secret decryption. The age private key is stored at `~/.config/sops/age/keys.txt`.
+
 ---
 
 ### System Modules (sys-modules/)
@@ -191,7 +205,7 @@ Installs system-wide packages:
 
 - **Nerd Font**: JetBrainsMono Nerd Font (used by terminal, bar, launcher, and prompt).
 - **Firefox**: system-level enable.
-- **System packages**: vim, wget, neovim, git, fastfetch, yazi, opencode, obsidian, python3, btop, sherpa-onnx (TTS engine), voxtype-vulkan (speech-to-text), wtype (Wayland keystroke injection), libnotify (desktop notifications).
+- **System packages**: vim, wget, neovim, git, fastfetch, yazi, opencode, obsidian, python3, btop, sherpa-onnx (TTS engine), voxtype-vulkan (speech-to-text), wtype (Wayland keystroke injection), libnotify (desktop notifications), gamescope (game micro-compositor), osu-lazer-bin (rhythm game), mangohud (performance overlay), lutris (game manager).
 
 #### virtualisation.nix
 
@@ -207,6 +221,26 @@ Configures the SDDM display manager theme:
 - **Cursor**: Bibata-Modern-Ice, size 24.
 - **Qt multimedia**: installed for theme animations and sounds.
 
+#### gaming.nix
+
+Dedicated gaming module to keep game dependencies isolated from the base system:
+
+- **Steam**: enabled with 32-bit graphics libraries, remote play firewall, dedicated server firewall, and automatic gamescope session wrapping.
+- **Gamemode**: CPU governor and I/O priority optimization; games request it automatically.
+- **MangoHud**: Vulkan/OpenGL performance overlay (FPS, temperatures, clock speeds), toggle with Shift+F12 inside games.
+- **Packages**: gamescope (Wayland micro-compositor for frame pacing and VRR), osu-lazer-bin (rhythm game), mangohud (standalone overlay support), lutris (game manager for GOG, Epic, Battle.net, emulators).
+- **Kernel tuning**: `vm.max_map_count` increased to 2147483642 for heavily modded games (Minecraft, Skyrim, Cities: Skylines).
+- **32-bit OpenGL**: explicit `driSupport32Bit = true` for legacy game compatibility.
+
+#### secrets.nix
+
+System-level sops-nix secret management:
+
+- **Import**: `inputs.sops-nix.nixosModules.sops` for NixOS integration.
+- **SSH key path**: points to `/home/{username}/.ssh/id_ed25519` for age decryption.
+- **Default file**: reads from `secrets/system.yaml`.
+- **Usage**: system secrets (WiFi credentials, API tokens) are decrypted at activation time and mounted under `/run/secrets/`, never entering the Nix store.
+
 ---
 
 ### Home Manager Modules (hm-modules/)
@@ -216,7 +250,7 @@ Configures the SDDM display manager theme:
 Configures user-level packages and desktop environment:
 
 - **Session variables**: EDITOR set to neovim.
-- **User packages** (50+): fastfetch, neovim, btop, htop, gcc, git, ripgrep, fd, unzip, gnumake, curl, kitty, wofi, waybar, awww (wallpaper daemon), hyprshot, wl-clipboard, brightnessctl, pamixer, swappy, grim, slurp, mako, hyprlock, hypridle, cliphist, starship, tree, bat, wlogout, playerctl, qt6ct, polkit_gnome, pavucontrol, networkmanagerapplet, firefox, thunar, imv, mpv, catppuccin-gtk, bibata-cursors, hyprpicker, wf-recorder, sddm-astronaut, chromium, blender, wofi-emoji.
+- **User packages** (55+): fastfetch, neovim, btop, htop, gcc, git, ripgrep, fd, unzip, gnumake, curl, kitty, wofi, waybar, awww (wallpaper daemon), hyprshot, wl-clipboard, brightnessctl, pamixer, swappy, grim, slurp, mako, hyprlock, hypridle, cliphist, starship, tree, bat, wlogout, playerctl, qt6ct, polkit_gnome, pavucontrol, networkmanagerapplet, firefox, thunar, imv, mpv, catppuccin-gtk, bibata-cursors, hyprpicker, wf-recorder, sddm-astronaut, chromium, blender, wofi-emoji (emoji picker), sops (secret encryption CLI), age (encryption backend), ssh-to-age (SSH-to-age key conversion).
 - **Cursor**: Bibata-Modern-Classic, size 24, linked to GTK.
 - **Desktop entries**: six Chromium-based web application shortcuts for Gemini, Discord, Instagram, NotebookLM, YouTube Music, and WhatsApp, each with an isolated `--user-data-dir`.
 - **Yazi config**: opens all files in neovim.
@@ -291,6 +325,8 @@ The largest module (approximately 250 lines), containing the full Hyprland compo
 
 **Keybinding categories**:
 
+- Emoji picker (wofi-emoji).
+- Keybind reference viewer.
 - Application launchers (terminal, browser, file manager).
 - Web application shortcuts (6 Chromium PWAs).
 - Screenshots (region, output, window) with swappy editing.
@@ -339,9 +375,18 @@ Kitty terminal configuration:
 - **Colors**: full Catppuccin Mocha terminal palette (16 standard colors, foreground, background, selection, cursor, URLs).
 - **Tab bar**: powerline style, mauve active tab, surface0 inactive tab.
 
+#### secrets.nix
+
+User-level sops-nix secret management:
+
+- **Import**: `inputs.sops-nix.homeManagerModules.sops` for Home Manager integration.
+- **SSH key path**: points to `/home/{username}/.ssh/id_ed25519` for age decryption.
+- **Default file**: reads from `secrets/user.yaml`.
+- **Usage**: user secrets (API tokens, personal access keys) are decrypted at activation time and mounted under `/run/secrets/`, accessible only by the owning user. Secrets are never stored in the Nix store.
+
 #### waybar.nix
 
-Waybar status bar with custom styling and 8 utility scripts (approximately 500 lines total).
+Waybar status bar with custom styling and 9 utility scripts (approximately 520 lines total).
 
 **Bar layout** (top, 36px height):
 
@@ -376,7 +421,8 @@ Waybar status bar with custom styling and 8 utility scripts (approximately 500 l
 | `clipboard.sh` | Displays cliphist history entries in Wofi with HTML-sanitized preview text; on selection, decodes and copies the entry back to the clipboard. |
 | `memory-manager.sh` | Two options: show memory info (free -h) in a terminal, or clear the RAM cache (sync + drop_caches). |
 | `screenshot.sh` | Captures a screenshot in region, output, or window mode via hyprshot; shows a preview in imv for 7 seconds, then opens swappy for editing and saving. |
-| `tts-speak.sh` | Downloads the Kokoro English TTS model on first run, then generates speech from selected text (primary selection) or clipboard content using sherpa-onnx; plays the result through PulseAudio/Wayland pipe. |
+| `tts-speak.sh` | Downloads the Kokoro English TTS model on first run, then generates speech from selected text (primary selection) or clipboard content using sherpa-onnx-offline-tts; plays the result through PulseAudio/Wayland pipe. |
+| `keybinds.sh` | Parses the active Hyprland config for all `bind`/`bindel`/`binde` lines, replaces `$mod` with `Super`, and displays them in a Wofi searchable window. Triggered by Super+K. |
 
 #### wofi.nix
 
@@ -416,6 +462,7 @@ All bindings use the Super (Windows) modifier unless noted otherwise.
 | Super + Space | Open Wofi application launcher |
 | Super + T | Open floating terminal (840x520) |
 | Super + Shift + E | Open Wofi emoji picker |
+| Super + K | Open Wofi keybind reference viewer |
 | Super + W | Open wallpaper selector |
 | Ctrl + Shift + Escape | Open btop system monitor in Kitty |
 
@@ -508,7 +555,6 @@ While in resize mode (entered via Super + R):
 | Super + Escape | Open power menu (shutdown, reboot, lock, logout) |
 | Super + Shift + L | Turn off displays (DPMS) |
 | Super + Alt + R | Reload Hyprland configuration |
-| Super + K | Show all keybindings |
 
 ---
 
@@ -555,6 +601,7 @@ To adapt this configuration to a different machine or user:
 | nixpkgs | github:NixOS/nixpkgs/nixos-unstable | Nixpkgs channel (unstable) |
 | home-manager | github:nix-community/home-manager | Home Manager (follows nixpkgs) |
 | areofyl-fetch | github:areofyl/fetch | System information fetch tool displayed on shell startup |
+| sops-nix | github:Mic92/sops-nix | Secret management — decrypts age-encrypted secrets at activation time, mounts under /run/secrets/ |
 
 ---
 

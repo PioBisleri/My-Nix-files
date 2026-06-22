@@ -48,6 +48,12 @@
           "tooltip": true,
           "on-click": "~/.config/waybar/scripts/memory-manager.sh"
         },
+        "custom/net-speed": {
+          "exec": "/home/veer/.config/waybar/scripts/net-speed.sh",
+          "interval": 2,
+          "return-type": "json",
+          "tooltip": false
+        },
         "network": {
           "format-wifi": "\uf1eb  {signalStrength}%",
           "format-ethernet": "\uf6ff  {ipaddr}",
@@ -79,7 +85,7 @@
           "format-charging": "\uf0e7 {capacity}%",
           "tooltip-format": "{timeTo}",
           "interval": 60,
-          "on-click": "~/.config/waybar/scripts/power-profiles.sh"
+          "on-click": "/home/veer/.config/waybar/scripts/power-profiles.sh"
         },
         "custom/power": {
           "format": "\uf011",
@@ -230,7 +236,7 @@
       }
 
       #custom-net-speed {
-        padding: 0 10px;
+        padding: 0 14px;
         margin: 4px 2px;
         background: rgba(49, 50, 68, 0.7);
         border-radius: 8px;
@@ -409,7 +415,7 @@ Clear RAM Cache"
   xdg.configFile."waybar/scripts/screenshot.sh" = {
     text = ''
       #!/usr/bin/env bash
-      DIR=$HOME/Pictures/Screenshots
+      DIR=/home/veer/Pictures/Screenshots
       NAME=shot_$(date +%Y%m%d_%H%M%S).png
       mkdir -p "$DIR"
       FILE=$DIR/$NAME
@@ -497,17 +503,14 @@ Clear RAM Cache"
     executable = true;
   };
 
+
   xdg.configFile."waybar/scripts/keybinds.sh" = {
     text = ''
       #!/usr/bin/env bash
       CONFIG="$HOME/.config/hypr/hyprland.conf"
       [ -f "$CONFIG" ] || { notify-send "Keybinds" "Config not found"; exit 1; }
 
-      entries=$(grep -E '^\s*bind[el]*\s*=' "$CONFIG" | \
-        sed 's/\$mod/Super/g' | \
-        sed 's/^[[:space:]]*bind[el]*\s*=\s*//' | \
-        sed 's/exec, //' | \
-        sed 's/submap, //')
+      entries=$(grep -E '^\s*bind[el]*\s*=' "$CONFIG" |         sed 's/\$mod/Super/g' |         sed 's/^[[:space:]]*bind[el]*\s*=\s*//' |         sed 's/exec, //' |         sed 's/submap, //')
 
       echo "$entries" | wofi --dmenu --prompt "Keybinds (Escape to close)" --width 900 --height 600 --cache-file /dev/null
     '';
