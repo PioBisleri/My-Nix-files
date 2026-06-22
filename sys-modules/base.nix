@@ -1,12 +1,12 @@
-{ config, pkgs, ... }: {
+{ config, pkgs, vars, ... }: {
 
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
-  networking.hostName = "nixos";
+  networking.hostName = vars.hostname;
   networking.networkmanager.enable = true;
 
-  time.timeZone = "Asia/Kolkata";
+  time.timeZone = vars.timezone;
 
   i18n.defaultLocale = "en_US.UTF-8";
   i18n.supportedLocales = [ "en_US.UTF-8/UTF-8" ];

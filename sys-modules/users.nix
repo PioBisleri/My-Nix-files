@@ -1,8 +1,8 @@
-{ config, pkgs, ... }: {
+{ config, pkgs, vars, ... }: {
 
-  users.users."veer" = {
+  users.users."${vars.username}" = {
     isNormalUser = true;
-    description = "Veer";
+    description = vars.fullName;
     extraGroups = [ "networkmanager" "wheel" "vboxusers" "input" ];
     shell = pkgs.zsh;
   };

@@ -1,5 +1,5 @@
 {
-  description = "NixOS configuration for veer";
+  description = "NixOS configuration";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -9,33 +9,31 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # Add the fetch flake input here
     areofyl-fetch.url = "github:areofyl/fetch";
   };
 
-  outputs = { self, nixpkgs, home-manager, areofyl-fetch, ... }@inputs: {
-    nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
-      system = "x86_64-linux";
-      
-      # Pass inputs to configuration.nix so it can use them
-      specialArgs = { inherit inputs; };
-
-      modules = [
-        ./configuration.nix
+  outputs = { self, nixpkgs, home-manager, areofyl-fetch, ... }@inputs:
+    let
+      vars = import ./vars.nix;
+    in {
+      nixosConfigurations.${vars.hostname} = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
         
-        # Home Manager module
-        home-manager.nixosModules.home-manager
-        {
-          home-manager.useGlobalPkgs = true;
-          home-manager.useUserPackages = true;
+        specialArgs = { inherit inputs vars; };
+
+        modules = [
+          ./configuration.nix
           
-          # Point to veer's home.nix
-          home-manager.users.veer = import ./home.nix;
-          
-          # Make inputs available in home.nix
-          home-manager.extraSpecialArgs = { inherit inputs; };
-        }
-      ];
+          home-manager.nixosModules.home-manager
+          {
+            home-manager.useGlobalPkgs = true;
+            home-manager.useUserPackages = true;
+            
+            home-manager.users.${vars.username} = import ./home.nix;
+            
+            home-manager.extraSpecialArgs = { inherit inputs vars; };
+          }
+        ];
+      };
     };
-  };
 }

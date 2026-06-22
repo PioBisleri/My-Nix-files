@@ -79,7 +79,7 @@
           "format-charging": "\uf0e7 {capacity}%",
           "tooltip-format": "{timeTo}",
           "interval": 60,
-          "on-click": "/home/veer/.config/waybar/scripts/power-profiles.sh"
+          "on-click": "~/.config/waybar/scripts/power-profiles.sh"
         },
         "custom/power": {
           "format": "\uf011",
@@ -409,7 +409,7 @@ Clear RAM Cache"
   xdg.configFile."waybar/scripts/screenshot.sh" = {
     text = ''
       #!/usr/bin/env bash
-      DIR=/home/veer/Pictures/Screenshots
+      DIR=$HOME/Pictures/Screenshots
       NAME=shot_$(date +%Y%m%d_%H%M%S).png
       mkdir -p "$DIR"
       FILE=$DIR/$NAME
@@ -493,6 +493,23 @@ Clear RAM Cache"
       else
         notify-send -u critical "TTS" "Speech generation failed"
       fi
+    '';
+    executable = true;
+  };
+
+  xdg.configFile."waybar/scripts/keybinds.sh" = {
+    text = ''
+      #!/usr/bin/env bash
+      CONFIG="$HOME/.config/hypr/hyprland.conf"
+      [ -f "$CONFIG" ] || { notify-send "Keybinds" "Config not found"; exit 1; }
+
+      entries=$(grep -E '^\s*bind[el]*\s*=' "$CONFIG" | \
+        sed 's/\$mod/Super/g' | \
+        sed 's/^[[:space:]]*bind[el]*\s*=\s*//' | \
+        sed 's/exec, //' | \
+        sed 's/submap, //')
+
+      echo "$entries" | wofi --dmenu --prompt "Keybinds (Escape to close)" --width 900 --height 600 --cache-file /dev/null
     '';
     executable = true;
   };
