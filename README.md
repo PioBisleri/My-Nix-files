@@ -8,7 +8,7 @@ The configuration is split into two layers: system-level NixOS modules under `sy
 
 ## Features
 
-- **Flake-based** layout with pinned inputs from nixos-unstable, home-manager, and areofyl-fetch.
+- **Flake-based** layout with pinned inputs from nixos-unstable, home-manager, areofyl-fetch, sops-nix, and hermes-agent.
 - **Hyprland** compositor with full keybindings, window rules, scratchpad, resize submap, custom animations, media/brightness/volume keys, and Catppuccin Mocha color scheme.
 - **Waybar** status bar with CPU, memory, network speed, Bluetooth, PulseAudio, battery, and power menu modules, backed by custom shell scripts.
 - **SDDM** display manager themed with sddm-astronaut (hyprland_kath variant), Bibata cursor, and HiDPI support.
@@ -60,6 +60,7 @@ The configuration is split into two layers: system-level NixOS modules under `sy
 |   |-- virtualisation.nix            # VirtualBox host with Extension Pack
 |   |-- sddm.nix                      # SDDM theme: sddm-astronaut, Bibata cursor, numlock
 |   |-- gaming.nix                    # Steam, Gamescope, Gamemode, MangoHud, Lutris, osu-lazer, kernel tuning
+|   |-- hermes.nix                     # Hermes AI agent service
 |   |-- secrets.nix                   # sops-nix system-level secret module
 |
 |-- hm-modules/                       # User-level Home Manager modules
@@ -205,7 +206,7 @@ Installs system-wide packages:
 
 - **Nerd Font**: JetBrainsMono Nerd Font (used by terminal, bar, launcher, and prompt).
 
-- **System packages**: vim, wget, neovim, git, fastfetch, yazi, opencode, obsidian, python3, btop, sherpa-onnx (TTS engine), voxtype-vulkan (speech-to-text), wtype (Wayland keystroke injection), libnotify (desktop notifications), gamescope (game micro-compositor), osu-lazer-bin (rhythm game), mangohud (performance overlay), lutris (game manager).
+- **System packages**: vim, wget, neovim, git, fastfetch, yazi, opencode, obsidian, python3, btop, sherpa-onnx (TTS engine), voxtype-vulkan (speech-to-text), wtype (Wayland keystroke injection), libnotify (desktop notifications), llama-cpp-vulkan (local LLM inference with GPU acceleration), gamescope (game micro-compositor), osu-lazer-bin (rhythm game), mangohud (performance overlay), lutris (game manager).
 
 #### virtualisation.nix
 
@@ -240,6 +241,16 @@ System-level sops-nix secret management:
 - **SSH key path**: points to `/home/{username}/.ssh/id_ed25519` for age decryption.
 - **Default file**: reads from `secrets/system.yaml`.
 - **Usage**: system secrets (WiFi credentials, API tokens) are decrypted at activation time and mounted under `/run/secrets/`, never entering the Nix store.
+
+---
+
+#### hermes.nix
+
+Hermes AI agent integration:
+
+- **Service**: enables `services.hermes-agent` for NixOS-level AI agent functionality.
+- **Source**: provided by the `hermes-agent` flake input (`github:NousResearch/hermes-agent`), imported as `hermes-agent.nixosModules.default`.
+- **Packages**: `addToSystemPackages = true` includes the Hermes CLI tool in the system environment.
 
 ---
 
@@ -603,6 +614,7 @@ To adapt this configuration to a different machine or user:
 | home-manager | github:nix-community/home-manager | Home Manager (follows nixpkgs) |
 | areofyl-fetch | github:areofyl/fetch | System information fetch tool displayed on shell startup |
 | sops-nix | github:Mic92/sops-nix | Secret management — decrypts age-encrypted secrets at activation time, mounts under /run/secrets/ |
+| hermes-agent | github:NousResearch/hermes-agent | AI agent for NixOS — system service and CLI integration |
 
 ---
 
