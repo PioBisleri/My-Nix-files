@@ -19,6 +19,7 @@
     voxtype-vulkan
     wtype
     libnotify
+    llama-cpp-vulkan
   ];
 
 }

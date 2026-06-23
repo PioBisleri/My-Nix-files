@@ -9,6 +9,9 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    hermes-agent.url = "github:NousResearch/hermes-agent";
+
+
     # Add the fetch flake input here
     areofyl-fetch.url = "github:areofyl/fetch";
 
@@ -18,7 +21,7 @@
     };
   };
 
-  outputs = { self, nixpkgs, home-manager, areofyl-fetch, sops-nix, ... }@inputs:
+  outputs = { self, nixpkgs, home-manager, areofyl-fetch, sops-nix, hermes-agent, ... }@inputs:
     let
       vars = import ./vars.nix;
     in {
@@ -30,6 +33,7 @@
 
       modules = [
         ./configuration.nix
+	hermes-agent.nixosModules.default
         
         # Home Manager module
         home-manager.nixosModules.home-manager

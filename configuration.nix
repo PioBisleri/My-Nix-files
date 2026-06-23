@@ -12,6 +12,7 @@
     ./sys-modules/sddm.nix
     ./sys-modules/gaming.nix
     ./sys-modules/secrets.nix
+    ./sys-modules/hermes.nix
   ];
 
 }
