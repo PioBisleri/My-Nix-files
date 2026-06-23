@@ -40,7 +40,7 @@
     polkit_gnome
     pavucontrol
     networkmanagerapplet
-    firefox
+    brave
     thunar
     imv
     mpv
@@ -49,7 +49,6 @@
     hyprpicker
     wf-recorder
     sddm-astronaut
-    chromium
     blender
     wofi-emoji
     sops
@@ -64,40 +63,48 @@
     gtk.enable = true;
   };
 
+  xdg.mimeApps.enable = true;
+
+  xdg.mimeApps.defaultApplications = {
+    "x-scheme-handler/http" = "brave-browser.desktop";
+    "x-scheme-handler/https" = "brave-browser.desktop";
+    "text/html" = "brave-browser.desktop";
+  };
+
   xdg.desktopEntries = {
     "gemini-web" = {
       name = "Gemini";
-      exec = "chromium --app=https://gemini.google.com --user-data-dir=/home/veer/.config/webapps/gemini";
+      exec = "brave --app=https://gemini.google.com --user-data-dir=/home/veer/.config/webapps/gemini";
       icon = "google-gemini";
       categories = [ "Network" ];
     };
     "discord-web" = {
       name = "Discord";
-      exec = "chromium --app=https://discord.com/app --user-data-dir=/home/veer/.config/webapps/discord";
+      exec = "brave --app=https://discord.com/app --user-data-dir=/home/veer/.config/webapps/discord";
       icon = "discord";
       categories = [ "Network" ];
     };
     "instagram-web" = {
       name = "Instagram";
-      exec = "chromium --app=https://instagram.com --user-data-dir=/home/veer/.config/webapps/instagram";
+      exec = "brave --app=https://instagram.com --user-data-dir=/home/veer/.config/webapps/instagram";
       icon = "instagram";
       categories = [ "Network" ];
     };
     "notebooklm-web" = {
       name = "NotebookLM";
-      exec = "chromium --app=https://notebooklm.google.com --user-data-dir=/home/veer/.config/webapps/notebooklm";
+      exec = "brave --app=https://notebooklm.google.com --user-data-dir=/home/veer/.config/webapps/notebooklm";
       icon = "notebooklm";
       categories = [ "Network" ];
     };
     "ytmusic-web" = {
       name = "YouTube Music";
-      exec = "chromium --app=https://music.youtube.com --user-data-dir=/home/veer/.config/webapps/ytmusic";
+      exec = "brave --app=https://music.youtube.com --user-data-dir=/home/veer/.config/webapps/ytmusic";
       icon = "youtube-music";
       categories = [ "Network" ];
     };
     "whatsapp-web" = {
       name = "WhatsApp";
-      exec = "chromium --app=https://web.whatsapp.com --user-data-dir=/home/veer/.config/webapps/whatsapp";
+      exec = "brave --app=https://web.whatsapp.com --user-data-dir=/home/veer/.config/webapps/whatsapp";
       icon = "whatsapp";
       categories = [ "Network" ];
     };

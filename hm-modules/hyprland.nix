@@ -54,7 +54,7 @@
     $mod = SUPER
     bind = $mod, Return, exec, $terminal
     bind = $mod SHIFT, V, exec, /home/veer/.config/waybar/scripts/clipboard.sh
-    bind = $mod, B, exec, firefox
+    bind = $mod, B, exec, brave
     bind = $mod, Q, killactive,
     bind = $mod, M, exit,
     bind = $mod, Space, exec, $menu
@@ -65,16 +65,16 @@
     bind = $mod, E, exec, thunar
     bind = $mod SHIFT, E, exec, wofi-emoji
     bind = $mod, T, exec, kitty --class floating-term -o initial_window_width=80c -o initial_window_height=24c
-    bind = $mod SHIFT, B, exec, firefox --new-window
+    bind = $mod SHIFT, B, exec, brave --new-window
     bind = $mod, W, exec, ~/.config/waybar/scripts/wallpaper-select.sh
 
     # --- Web apps ---
-    bind = $mod, A, exec, bash -c 'mkdir -p ~/.config/webapps/gemini && chromium --app=https://gemini.google.com --user-data-dir=~/.config/webapps/gemini'
-    bind = $mod, D, exec, bash -c 'mkdir -p ~/.config/webapps/discord && chromium --app=https://discord.com/app --user-data-dir=~/.config/webapps/discord'
-    bind = $mod, I, exec, bash -c 'mkdir -p ~/.config/webapps/instagram && chromium --app=https://instagram.com --user-data-dir=~/.config/webapps/instagram'
-    bind = $mod, N, exec, bash -c 'mkdir -p ~/.config/webapps/notebooklm && chromium --app=https://notebooklm.google.com --user-data-dir=~/.config/webapps/notebooklm'
-    bind = $mod SHIFT, Y, exec, bash -c 'mkdir -p ~/.config/webapps/ytmusic && chromium --app=https://music.youtube.com --user-data-dir=~/.config/webapps/ytmusic'
-    bind = $mod SHIFT, W, exec, bash -c 'mkdir -p ~/.config/webapps/whatsapp && chromium --app=https://web.whatsapp.com --user-data-dir=~/.config/webapps/whatsapp'
+    bind = $mod, A, exec, bash -c 'mkdir -p ~/.config/webapps/gemini && brave --app=https://gemini.google.com --user-data-dir=$HOME/.config/webapps/gemini'
+    bind = $mod, D, exec, bash -c 'mkdir -p ~/.config/webapps/discord && brave --app=https://discord.com/app --user-data-dir=$HOME/.config/webapps/discord'
+    bind = $mod, I, exec, bash -c 'mkdir -p ~/.config/webapps/instagram && brave --app=https://instagram.com --user-data-dir=$HOME/.config/webapps/instagram'
+    bind = $mod, N, exec, bash -c 'mkdir -p ~/.config/webapps/notebooklm && brave --app=https://notebooklm.google.com --user-data-dir=$HOME/.config/webapps/notebooklm'
+    bind = $mod SHIFT, Y, exec, bash -c 'mkdir -p ~/.config/webapps/ytmusic && brave --app=https://music.youtube.com --user-data-dir=$HOME/.config/webapps/ytmusic'
+    bind = $mod SHIFT, W, exec, bash -c 'mkdir -p ~/.config/webapps/whatsapp && brave --app=https://web.whatsapp.com --user-data-dir=$HOME/.config/webapps/whatsapp'
 
     # --- Screenshots ---
     bind = $mod SHIFT, S, exec, ~/.config/waybar/scripts/screenshot.sh region
