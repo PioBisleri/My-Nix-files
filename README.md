@@ -22,7 +22,7 @@ The configuration is split into two layers: system-level NixOS modules under `sy
 - **Screen recording** toggle with wf-recorder.
 - **Battery monitoring** with automatic power-saver profile switching.
 - **Backup** SSH agent enabled.
-- **Web application shortcuts** for Gemini, Discord, Instagram, NotebookLM, YouTube Music, and WhatsApp, each running as a dedicated Chromium app with isolated user data directories.
+- **Web application shortcuts** for Gemini, Discord, Instagram, NotebookLM, YouTube Music, and WhatsApp, each running as a dedicated Brave app with isolated user data directories.
 - **Emoji picker** via wofi-emoji, keybound to Super+Shift+E.
 - **Keybind reference** — Super+K opens a Wofi window listing all current Hyprland keybindings.
 - **Secret management** with sops-nix, using age encryption backed by an ed25519 SSH key. Secrets are decrypted at activation time and mounted under `/run/secrets/`.
@@ -56,7 +56,7 @@ The configuration is split into two layers: system-level NixOS modules under `sy
 |   |-- audio.nix                     # PipeWire, ALSA, PulseAudio compat, printing
 |   |-- hardware.nix                  # Bluetooth, Blueman
 |   |-- users.nix                     # User account, groups, Polkit
-|   |-- packages.nix                  # System packages, fonts, Firefox
+|   |-- packages.nix                  # System packages, fonts
 |   |-- virtualisation.nix            # VirtualBox host with Extension Pack
 |   |-- sddm.nix                      # SDDM theme: sddm-astronaut, Bibata cursor, numlock
 |   |-- gaming.nix                    # Steam, Gamescope, Gamemode, MangoHud, Lutris, osu-lazer, kernel tuning
@@ -204,7 +204,7 @@ Configures the primary user account:
 Installs system-wide packages:
 
 - **Nerd Font**: JetBrainsMono Nerd Font (used by terminal, bar, launcher, and prompt).
-- **Firefox**: system-level enable.
+
 - **System packages**: vim, wget, neovim, git, fastfetch, yazi, opencode, obsidian, python3, btop, sherpa-onnx (TTS engine), voxtype-vulkan (speech-to-text), wtype (Wayland keystroke injection), libnotify (desktop notifications), gamescope (game micro-compositor), osu-lazer-bin (rhythm game), mangohud (performance overlay), lutris (game manager).
 
 #### virtualisation.nix
@@ -250,9 +250,10 @@ System-level sops-nix secret management:
 Configures user-level packages and desktop environment:
 
 - **Session variables**: EDITOR set to neovim.
-- **User packages** (55+): fastfetch, neovim, btop, htop, gcc, git, ripgrep, fd, unzip, gnumake, curl, kitty, wofi, waybar, awww (wallpaper daemon), hyprshot, wl-clipboard, brightnessctl, pamixer, swappy, grim, slurp, mako, hyprlock, hypridle, cliphist, starship, tree, bat, wlogout, playerctl, qt6ct, polkit_gnome, pavucontrol, networkmanagerapplet, firefox, thunar, imv, mpv, catppuccin-gtk, bibata-cursors, hyprpicker, wf-recorder, sddm-astronaut, chromium, blender, wofi-emoji (emoji picker), sops (secret encryption CLI), age (encryption backend), ssh-to-age (SSH-to-age key conversion).
+- **User packages** (55+): fastfetch, neovim, btop, htop, gcc, git, ripgrep, fd, unzip, gnumake, curl, kitty, wofi, waybar, awww (wallpaper daemon), hyprshot, wl-clipboard, brightnessctl, pamixer, swappy, grim, slurp, mako, hyprlock, hypridle, cliphist, starship, tree, bat, wlogout, playerctl, qt6ct, polkit_gnome, pavucontrol, networkmanagerapplet, brave, thunar, imv, mpv, catppuccin-gtk, bibata-cursors, hyprpicker, wf-recorder, sddm-astronaut, blender, wofi-emoji (emoji picker), sops (secret encryption CLI), age (encryption backend), ssh-to-age (SSH-to-age key conversion).
 - **Cursor**: Bibata-Modern-Classic, size 24, linked to GTK.
-- **Desktop entries**: six Chromium-based web application shortcuts for Gemini, Discord, Instagram, NotebookLM, YouTube Music, and WhatsApp, each with an isolated `--user-data-dir`.
+- **Desktop entries**: six Brave-based web application shortcuts for Gemini, Discord, Instagram, NotebookLM, YouTube Music, and WhatsApp, each with an isolated `--user-data-dir`.
+- **Default browser**: Brave set as the default browser via `xdg.mimeApps` MIME associations for HTTP, HTTPS, and HTML.
 - **Yazi config**: opens all files in neovim.
 - **Swappy config**: saves screenshots to `~/Pictures/Screenshots` with a timestamped filename format.
 
@@ -328,7 +329,7 @@ The largest module (approximately 250 lines), containing the full Hyprland compo
 - Emoji picker (wofi-emoji).
 - Keybind reference viewer.
 - Application launchers (terminal, browser, file manager).
-- Web application shortcuts (6 Chromium PWAs).
+- Web application shortcuts (6 Brave PWAs).
 - Screenshots (region, output, window) with swappy editing.
 - Screen recording toggle.
 - Workspace navigation and window movement.
@@ -456,8 +457,8 @@ All bindings use the Super (Windows) modifier unless noted otherwise.
 | Key | Action |
 |---|---|
 | Super + Return | Open Kitty terminal |
-| Super + B | Open Firefox |
-| Super + Shift + B | Open Firefox (new window) |
+| Super + B | Open Brave |
+| Super + Shift + B | Open Brave (new window) |
 | Super + E | Open Thunar file manager |
 | Super + Space | Open Wofi application launcher |
 | Super + T | Open floating terminal (840x520) |
@@ -470,12 +471,12 @@ All bindings use the Super (Windows) modifier unless noted otherwise.
 
 | Key | Application |
 |---|---|
-| Super + A | Gemini (Chromium PWA) |
-| Super + D | Discord (Chromium PWA) |
-| Super + I | Instagram (Chromium PWA) |
-| Super + N | NotebookLM (Chromium PWA) |
-| Super + Shift + Y | YouTube Music (Chromium PWA) |
-| Super + Shift + W | WhatsApp (Chromium PWA) |
+| Super + A | Gemini (Brave PWA) |
+| Super + D | Discord (Brave PWA) |
+| Super + I | Instagram (Brave PWA) |
+| Super + N | NotebookLM (Brave PWA) |
+| Super + Shift + Y | YouTube Music (Brave PWA) |
+| Super + Shift + W | WhatsApp (Brave PWA) |
 
 ### Window Management
 
