@@ -101,7 +101,7 @@
     Service = {
       Type = "simple";
       ExecStart = "${pkgs.voxtype-vulkan}/bin/voxtype daemon";
-      Restart = "on-failure";
+      Restart = "always";
       RestartSec = 2;
     };
     Install = {
