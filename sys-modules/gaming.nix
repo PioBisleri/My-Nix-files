@@ -1,22 +1,21 @@
 { config, pkgs, ... }:
 
 {
-  programs.steam = {
+  hardware.graphics = {
     enable = true;
-    remotePlay.openFirewall = true;
-    dedicatedServer.openFirewall = true;
-    gamescopeSession.enable = true;
+    enable32Bit = true;
   };
 
   programs.gamemode.enable = true;
 
-  hardware.opengl.driSupport32Bit = true;
 
   environment.systemPackages = with pkgs; [
     gamescope
-    osu-lazer-bin
     mangohud
     lutris
+    winetricks
+    protonup-qt
+    gamemode
   ];
 
   boot.kernel.sysctl = {

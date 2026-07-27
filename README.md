@@ -1,6 +1,6 @@
 # NixOS Configuration
 
-A modular, flake-based NixOS configuration featuring a Hyprland compositor environment on Wayland with a cohesive Catppuccin Mocha theme across the entire desktop stack. Designed as a daily-driver setup for a personal laptop, with full support for audio, Bluetooth, printing, VirtualBox, screen capture, clipboard management, speech-to-text, and text-to-speech.
+A modular, flake-based NixOS configuration featuring a Hyprland compositor environment on Wayland with a cohesive Catppuccin Mocha theme across the entire desktop stack. Designed as a daily-driver setup for a personal laptop, with full support for audio, Bluetooth, printing, screen capture, clipboard management, speech-to-text, and text-to-speech.
 
 The configuration is split into two layers: system-level NixOS modules under `sys-modules/` and user-level Home Manager modules under `hm-modules/`. All user-configurable values (username, hostname, timezone, email) are centralized in `vars.nix`.
 
@@ -8,7 +8,7 @@ The configuration is split into two layers: system-level NixOS modules under `sy
 
 ## Features
 
-- **Flake-based** layout with pinned inputs from nixos-unstable, home-manager, areofyl-fetch, sops-nix, and hermes-agent.
+- **Flake-based** layout with pinned inputs from nixos-26.05, home-manager, areofyl-fetch, and sops-nix.
 - **Hyprland** compositor with full keybindings, window rules, scratchpad, resize submap, custom animations, media/brightness/volume keys, and Catppuccin Mocha color scheme.
 - **Waybar** status bar with CPU, memory, network speed, Bluetooth, PulseAudio, battery, and power menu modules, backed by custom shell scripts.
 - **SDDM** display manager themed with sddm-astronaut (hyprland_kath variant), Bibata cursor, and HiDPI support.
@@ -21,12 +21,13 @@ The configuration is split into two layers: system-level NixOS modules under `sy
 - **Screenshot** workflow: hyprshot capture, quick imv preview, swappy editing.
 - **Screen recording** toggle with wf-recorder.
 - **Battery monitoring** with automatic power-saver profile switching.
-- **Backup** SSH agent enabled.
+- **SSH agent** enabled.
 - **Web application shortcuts** for Gemini, Discord, Instagram, NotebookLM, YouTube Music, and WhatsApp, each running as a dedicated Brave app with isolated user data directories.
 - **Emoji picker** via wofi-emoji, keybound to Super+Shift+E.
 - **Keybind reference** — Super+K opens a Wofi window listing all current Hyprland keybindings.
 - **Secret management** with sops-nix, using age encryption backed by an ed25519 SSH key. Secrets are decrypted at activation time and mounted under `/run/secrets/`.
-- **Dedicated gaming module** with Steam (gamescope session, remote play), Gamemode, MangoHud overlay, Gamescope micro-compositor, osu-lazer, and Lutris game manager, plus kernel optimizations for modded games.
+- **Dedicated gaming module** with 32-bit graphics support, Gamemode, MangoHud overlay, Gamescope micro-compositor, Lutris game manager, winetricks, and ProtonUP-Qt, plus kernel optimizations for modded games.
+- **Comprehensive MIME associations** covering browser, terminal, code editors, documents, images, video, audio, archives, torrents, and AppImage files.
 
 ---
 
@@ -54,19 +55,18 @@ The configuration is split into two layers: system-level NixOS modules under `sy
 |   |-- base.nix                      # Bootloader, networking, timezone, flakes, unfree
 |   |-- display.nix                   # X11, SDDM, Hyprland, US keymap
 |   |-- audio.nix                     # PipeWire, ALSA, PulseAudio compat, printing
-|   |-- hardware.nix                  # Bluetooth, Blueman
+|   |-- hardware.nix                  # Bluetooth, Blueman, GVFS, UDisks2
 |   |-- users.nix                     # User account, groups, Polkit
 |   |-- packages.nix                  # System packages, fonts
-|   |-- virtualisation.nix            # VirtualBox host with Extension Pack
 |   |-- sddm.nix                      # SDDM theme: sddm-astronaut, Bibata cursor, numlock
-|   |-- gaming.nix                    # Steam, Gamescope, Gamemode, MangoHud, Lutris, osu-lazer, kernel tuning
-|   |-- hermes.nix                     # Hermes AI agent service
+|   |-- gaming.nix                    # Gamemode, MangoHud, Gamescope, Lutris, kernel tuning
+|   |-- thunar.nix                    # Thunar file manager, MTP udev rules
 |   |-- secrets.nix                   # sops-nix system-level secret module
 |
 |-- hm-modules/                       # User-level Home Manager modules
     |-- packages.nix                  # User packages, cursor, desktop entries, Yazi config
+    |-- default-apps.nix              # Comprehensive MIME type associations
     |-- zsh.nix                       # Zsh with autosuggestions, syntax highlighting, Starship prompt
-    |-- bash.nix                      # Bash with aliases and fetch startup
     |-- git.nix                       # Git identity and defaults
     |-- gtk.nix                       # Catppuccin Mocha GTK theme, Papirus icons
     |-- hyprland.nix                  # Full Hyprland configuration (keybinds, rules, animations)
@@ -146,7 +146,7 @@ A single file holding all user-specific values. Edit this file to adapt the conf
 
 These values are injected into both NixOS and Home Manager modules via `specialArgs` and `extraSpecialArgs` in `flake.nix`.
 
-The configuration also generates a dedicated ed25519 SSH key (`~/.ssh/id_ed25519`) which is converted to an age key for sops-nix secret decryption. The age private key is stored at `~/.config/sops/age/keys.txt`.
+The configuration uses an ed25519 SSH key (`~/.ssh/id_ed25519`) converted to an age key for sops-nix secret decryption.
 
 ---
 
@@ -157,10 +157,11 @@ The configuration also generates a dedicated ed25519 SSH key (`~/.ssh/id_ed25519
 Configures the base system:
 
 - **Bootloader**: systemd-boot with EFI variable write access.
-- **Networking**: hostname from `vars.hostname`, NetworkManager enabled for network management.
+- **Networking**: hostname from `vars.hostname`, NetworkManager enabled for network management (with ProtonVPN IPv6 leak protection interface unmanaged).
+- **Firewall**: enabled, ping allowed.
 - **Timezone**: set from `vars.timezone`.
 - **Locale**: en_US.UTF-8 only.
-- **Nix**: enables `nix-command` and `flakes` experimental features.
+- **Nix**: enables `nix-command` and `flakes` experimental features; HTTP/2 disabled; limited concurrent downloads; weekly GC (14-day threshold) and store optimisation.
 - **Unfree software**: allows packages with unfree licenses.
 - **Power profiles**: power-profiles-daemon for performance/balanced/power-saver switching.
 - **Shell**: Zsh enabled system-wide.
@@ -186,10 +187,12 @@ Configures audio and printing:
 
 #### hardware.nix
 
-Configures Bluetooth hardware:
+Configures Bluetooth and storage hardware:
 
 - **Bluetooth**: enabled, powers on at boot.
 - **Blueman**: Bluetooth management GUI installed and enabled.
+- **GVFS**: virtual filesystem support for mounting remote/removable filesystems.
+- **UDisks2**: disk management daemon.
 
 #### users.nix
 
@@ -205,12 +208,7 @@ Configures the primary user account:
 Installs system-wide packages:
 
 - **Nerd Font**: JetBrainsMono Nerd Font (used by terminal, bar, launcher, and prompt).
-
-- **System packages**: vim, wget, neovim, git, fastfetch, yazi, opencode, obsidian, python3, btop, sherpa-onnx (TTS engine), voxtype-vulkan (speech-to-text), wtype (Wayland keystroke injection), libnotify (desktop notifications), llama-cpp-vulkan (local LLM inference with GPU acceleration), gamescope (game micro-compositor), osu-lazer-bin (rhythm game), mangohud (performance overlay), lutris (game manager).
-
-#### virtualisation.nix
-
-- **VirtualBox**: host support enabled with Extension Pack (USB 2.0/3.0, RDP, PXE boot).
+- **System packages**: wget, yazi, opencode (AI coding assistant), obsidian, python3, voxtype-vulkan (speech-to-text), wtype (Wayland keystroke injection), libnotify (desktop notifications), nodejs, jdk21, docker, dconf-editor, gimp.
 
 #### sddm.nix
 
@@ -226,12 +224,17 @@ Configures the SDDM display manager theme:
 
 Dedicated gaming module to keep game dependencies isolated from the base system:
 
-- **Steam**: enabled with 32-bit graphics libraries, remote play firewall, dedicated server firewall, and automatic gamescope session wrapping.
+- **Graphics**: 32-bit OpenGL/Vulkan support enabled.
 - **Gamemode**: CPU governor and I/O priority optimization; games request it automatically.
-- **MangoHud**: Vulkan/OpenGL performance overlay (FPS, temperatures, clock speeds), toggle with Shift+F12 inside games.
-- **Packages**: gamescope (Wayland micro-compositor for frame pacing and VRR), osu-lazer-bin (rhythm game), mangohud (standalone overlay support), lutris (game manager for GOG, Epic, Battle.net, emulators).
+- **Packages**: gamescope (Wayland micro-compositor for frame pacing and VRR), mangohud (Vulkan/OpenGL performance overlay), lutris (game manager for GOG, Epic, Battle.net, emulators), winetricks, protonup-qt, gamemode.
 - **Kernel tuning**: `vm.max_map_count` increased to 2147483642 for heavily modded games (Minecraft, Skyrim, Cities: Skylines).
-- **32-bit OpenGL**: explicit `driSupport32Bit = true` for legacy game compatibility.
+
+#### thunar.nix
+
+Configures the Thunar file manager:
+
+- **Thunar**: enabled with archive plugin and volume manager.
+- **MTP support**: dedicated `plugdev` group with udev rules for MTP devices (cameras, phones), auto-mounted via GVFS with 0660 permissions.
 
 #### secrets.nix
 
@@ -240,17 +243,6 @@ System-level sops-nix secret management:
 - **Import**: `inputs.sops-nix.nixosModules.sops` for NixOS integration.
 - **SSH key path**: points to `/home/{username}/.ssh/id_ed25519` for age decryption.
 - **Default file**: reads from `secrets/system.yaml`.
-- **Usage**: system secrets (WiFi credentials, API tokens) are decrypted at activation time and mounted under `/run/secrets/`, never entering the Nix store.
-
----
-
-#### hermes.nix
-
-Hermes AI agent integration:
-
-- **Service**: enables `services.hermes-agent` for NixOS-level AI agent functionality.
-- **Source**: provided by the `hermes-agent` flake input (`github:NousResearch/hermes-agent`), imported as `hermes-agent.nixosModules.default`.
-- **Packages**: `addToSystemPackages = true` includes the Hermes CLI tool in the system environment.
 
 ---
 
@@ -261,12 +253,28 @@ Hermes AI agent integration:
 Configures user-level packages and desktop environment:
 
 - **Session variables**: EDITOR set to neovim.
-- **User packages** (55+): fastfetch, neovim, btop, htop, gcc, git, ripgrep, fd, unzip, gnumake, curl, kitty, wofi, waybar, awww (wallpaper daemon), hyprshot, wl-clipboard, brightnessctl, pamixer, swappy, grim, slurp, mako, hyprlock, hypridle, cliphist, starship, tree, bat, wlogout, playerctl, qt6ct, polkit_gnome, pavucontrol, networkmanagerapplet, brave, thunar, imv, mpv, catppuccin-gtk, bibata-cursors, hyprpicker, wf-recorder, sddm-astronaut, blender, wofi-emoji (emoji picker), sops (secret encryption CLI), age (encryption backend), ssh-to-age (SSH-to-age key conversion).
+- **User packages** (80+): fastfetch, neovim, btop, gcc, git, ripgrep, fd, kitty, wofi, waybar, awww (wallpaper daemon), hyprshot, wl-clipboard, brightnessctl, pamixer, swappy, grim, slurp, mako, hyprlock, hypridle, cliphist, starship, tree, bat, wlogout, playerctl, qt6ct, polkit_gnome, pavucontrol, networkmanagerapplet, brave, vscode, libmtp, mtpfs, jmtpfs, imv, mpv, catppuccin-gtk, bibata-cursors, hyprpicker, wf-recorder, sddm-astronaut, wofi-emoji, file-roller, sops, age, ssh-to-age, qbittorrent, proton-vpn, fzf, zoxide, lazygit, ffmpeg, obs-studio, mission-center, nix-output-monitor, nil (Nix LSP), nixpkgs-fmt, cava, appimage-run, yt-dlp, nix-tree, nix-index, comma, jq, yq, tmux, wireshark, nmap, dnsutils, imagemagick, sox, handbrake, zathura, kdenlive, inkscape, audacity.
 - **Cursor**: Bibata-Modern-Classic, size 24, linked to GTK.
 - **Desktop entries**: six Brave-based web application shortcuts for Gemini, Discord, Instagram, NotebookLM, YouTube Music, and WhatsApp, each with an isolated `--user-data-dir`.
-- **Default browser**: Brave set as the default browser via `xdg.mimeApps` MIME associations for HTTP, HTTPS, and HTML.
 - **Yazi config**: opens all files in neovim.
 - **Swappy config**: saves screenshots to `~/Pictures/Screenshots` with a timestamped filename format.
+- **Thunar volman**: auto-mount drives and media.
+
+#### default-apps.nix
+
+Comprehensive MIME type associations (~100 entries) across all media types:
+
+- **Browser**: Brave for HTTP/HTTPS/FTP/mailto schemes and text/html.
+- **File manager**: Thunar for inode/directory.
+- **Terminal**: Kitty for terminal scheme.
+- **Text/code**: neovim for plain text, markdown, CSV, all common programming languages, config formats (JSON, TOML, YAML), markup (HTML, XML, TeX, CSS, Dockerfile, Makefile, diff, log).
+- **Documents**: zathura for PDF, PostScript, RTF, EPUB.
+- **Images**: imv for common raster formats (PNG, JPEG, WebP, GIF, BMP, TIFF, TGA, ICO, PPM/PGM/PBM); Inkscape for SVG; GIMP for layered formats (XCF, PSD).
+- **Video**: mpv for MP4, WebM, MKV, AVI, MPEG, QuickTime, Flash, WMV, Ogg, 3GP, M2T, M4V, FLIC.
+- **Audio**: mpv for MP3, AAC, WAV, FLAC, Ogg Vorbis, Opus, M4A, WMA, AIFF, MIDI, MOD, playlist formats (M3U, PLS).
+- **Archives**: file-roller for ZIP, tar, gzip, bzip2, xz, zstd, 7z, RAR, cpio, ar, compress, br, lzip, lzma, lzop, deb, rpm, ISO.
+- **Torrents**: qbittorrent.
+- **AppImage**: appimage-run.
 
 #### zsh.nix
 
@@ -275,22 +283,16 @@ Configures the Zsh shell:
 - **Autosuggestions**: fish-like completions based on history.
 - **Syntax highlighting**: real-time command coloring.
 - **Completion system**: enhanced tab completion.
-- **Aliases** (30+):
-  - Nix: `rebuild`, `flake-update`, `garbage`, `clean`, `search`, `generations`.
+- **Aliases** (60+):
+  - Nix: `rebuild`, `upgrade`, `flake-update`, `test`, `boot`, `rollback`, `repair`, `garbage`, `clean`, `search`, `history`, `generations`.
   - Navigation: `..`, `...`, `ls`, `ll`, `la`, `l`.
   - Safety: `rm -i`, `cp -i`, `mv -i`.
-  - Shortcuts: `cat` -> bat, `vim`/`vi` -> nvim, `y` -> yazi, `g`/`gs`/`ga`/`gc`/etc. -> git.
+  - Shortcuts: `cat` -> bat, `vim`/`vi` -> nvim, `y` -> yazi, `dot` -> nvim /etc/nixos, `top` -> btop.
+  - Git (20+): `g`, `gs`, `ga`, `gc`, `gp`, `gpl`, `gm`, `gf`, `gst`, `grs`, `gcb`, `gpsup`, `gl`, `glog`, `gd`, `gco`, `gb`.
   - System: `df -h`, `du -h`, `free -h`, `ps auxf`, `ports` (ss -tulanp).
 - **History**: 10,000 entries, deduplication, ignores commands prefixed with a space.
 - **Init script**: defines a `mkcd` function (mkdir + cd), runs `fetch`, evaluates `starship init`.
 - **Starship prompt**: full Catppuccin Mocha palette, shows OS icon, username, directory, git branch/status, time, command duration, Nix shell indicator. Prompt character uses mauve on success, red on error.
-
-#### bash.nix
-
-A lighter Bash configuration for fallback use:
-
-- **Fetch**: runs the areofyl-fetch system information script on startup.
-- **Aliases**: core Nix commands, `ls`/`ll`, colored grep, `:q` -> exit (vim escape hatch).
 
 #### git.nix
 
@@ -307,7 +309,6 @@ Configures GTK theming:
 - **Theme**: Catppuccin Mocha with Mauve accent color, built via `catppuccin-gtk` with explicit accent and variant overrides.
 - **Icons**: Papirus-Dark.
 - **Dark mode**: GTK3 and GTK4 both prefer dark themes.
-- **Data files**: theme symlinked to `~/.local/share/themes/` for applications that scan that directory.
 
 #### hyprland.nix
 
@@ -337,9 +338,9 @@ The largest module (approximately 250 lines), containing the full Hyprland compo
 
 **Keybinding categories**:
 
+- Application launchers (terminal, browser, file manager, Obsidian).
 - Emoji picker (wofi-emoji).
 - Keybind reference viewer.
-- Application launchers (terminal, browser, file manager).
 - Web application shortcuts (6 Brave PWAs).
 - Screenshots (region, output, window) with swappy editing.
 - Screen recording toggle.
@@ -383,7 +384,7 @@ Lock screen configuration:
 Kitty terminal configuration:
 
 - **Font**: JetBrainsMono Nerd Font, 12px.
-- **Appearance**: 85% background opacity, 2px background blur, 12px window padding, no window decorations.
+- **Appearance**: 85% background opacity, background blur, 12px window padding, no window decorations.
 - **Colors**: full Catppuccin Mocha terminal palette (16 standard colors, foreground, background, selection, cursor, URLs).
 - **Tab bar**: powerline style, mauve active tab, surface0 inactive tab.
 
@@ -394,7 +395,6 @@ User-level sops-nix secret management:
 - **Import**: `inputs.sops-nix.homeManagerModules.sops` for Home Manager integration.
 - **SSH key path**: points to `/home/{username}/.ssh/id_ed25519` for age decryption.
 - **Default file**: reads from `secrets/user.yaml`.
-- **Usage**: user secrets (API tokens, personal access keys) are decrypted at activation time and mounted under `/run/secrets/`, accessible only by the owning user. Secrets are never stored in the Nix store.
 
 #### waybar.nix
 
@@ -440,8 +440,8 @@ Waybar status bar with custom styling and 9 utility scripts (approximately 520 l
 
 Wofi application launcher and wallpaper picker configuration:
 
-- **Main launcher**: 600x450, centered, drun mode, app icons enabled (32px), GTK dark mode, Kitty as terminal.
-- **Wallpaper picker**: 600x400, image size 400px for wallpaper thumbnail previews.
+- **Main launcher**: 900x650, centered, drun mode, app icons enabled (48px), GTK dark mode, Kitty as terminal.
+- **Wallpaper picker**: 900x600, image size 500px for wallpaper thumbnail previews.
 - **Style**: Catppuccin Mocha colors, 2px mauve border, 12px rounding, 95% opaque background, mauve selection highlight with dark text, rounded input field with focus border.
 
 #### services.nix
@@ -449,13 +449,14 @@ Wofi application launcher and wallpaper picker configuration:
 Background services managed by Home Manager:
 
 - **Mako notifications**: Catppuccin Mocha themed (dark background, mauve border), 5-second default timeout, 350x120 max size, top-right anchor, overlay layer, grouped by category.
+- **direnv**: enabled with nix-direnv for per-directory environment loading.
 - **Battery monitor**: systemd timer running every 3 minutes. Checks if the battery is discharging below 20% and the power profile is not already power-saver; if so, switches to power-saver and shows a critical notification.
 - **Hypridle**: idle management daemon with three stages:
   - 5 minutes: lock screen.
   - 10 minutes: DPMS display off.
   - 30 minutes: system suspend.
 - **SSH agent**: enabled for key-based authentication.
-- **Voxtype**: systemd user service for push-to-talk speech-to-text. Uses the Vulkan-accelerated Voxtype daemon with auto-restart on failure. Configuration uses the base.en Whisper model, 16 kHz sample rate, 60-second max duration, 6 threads, with output typed directly (clipboard fallback), and notifications for recording start, stop, and transcription events.
+- **Voxtype**: systemd user service for push-to-talk speech-to-text. Uses the Vulkan-accelerated Voxtype daemon with auto-restart on failure. Includes a watchdog timer checking every 2 minutes. Configuration uses the base.en Whisper model, 16 kHz sample rate, 60-second max duration, 6 threads, with output typed directly (clipboard fallback), and notifications for recording start, stop, and transcription events.
 
 ---
 
@@ -470,7 +471,9 @@ All bindings use the Super (Windows) modifier unless noted otherwise.
 | Super + Return | Open Kitty terminal |
 | Super + B | Open Brave |
 | Super + Shift + B | Open Brave (new window) |
+| Super + Ctrl + B | Open Brave (incognito) |
 | Super + E | Open Thunar file manager |
+| Super + O | Open Obsidian |
 | Super + Space | Open Wofi application launcher |
 | Super + T | Open floating terminal (840x520) |
 | Super + Shift + E | Open Wofi emoji picker |
@@ -594,7 +597,6 @@ To adapt this configuration to a different machine or user:
 
 4. **Review and adjust**:
    - If your display or GPU differs from the AMD-based setup, check `sys-modules/base.nix` for kernel modules.
-   - If you do not use VirtualBox, remove or comment out `sys-modules/virtualisation.nix` from `configuration.nix`.
    - If you use a different keyboard layout, update it in `sys-modules/display.nix` and `hm-modules/hyprland.nix`.
 
 5. **Rebuild**:
@@ -610,11 +612,10 @@ To adapt this configuration to a different machine or user:
 
 | Input | Source | Description |
 |---|---|---|
-| nixpkgs | github:NixOS/nixpkgs/nixos-unstable | Nixpkgs channel (unstable) |
-| home-manager | github:nix-community/home-manager | Home Manager (follows nixpkgs) |
+| nixpkgs | github:NixOS/nixpkgs/nixos-26.05 | Nixpkgs channel (26.05 stable) |
+| home-manager | github:nix-community/home-manager/release-26.05 | Home Manager (follows nixpkgs) |
 | areofyl-fetch | github:areofyl/fetch | System information fetch tool displayed on shell startup |
 | sops-nix | github:Mic92/sops-nix | Secret management — decrypts age-encrypted secrets at activation time, mounts under /run/secrets/ |
-| hermes-agent | github:NousResearch/hermes-agent | AI agent for NixOS — system service and CLI integration |
 
 ---
 

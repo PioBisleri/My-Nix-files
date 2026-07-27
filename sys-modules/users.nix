@@ -3,7 +3,7 @@
   users.users."${vars.username}" = {
     isNormalUser = true;
     description = vars.fullName;
-    extraGroups = [ "networkmanager" "wheel" "vboxusers" "input" ];
+    extraGroups = [ "networkmanager" "wheel" "input" ];
     shell = pkgs.zsh;
   };
 

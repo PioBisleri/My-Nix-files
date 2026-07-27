@@ -66,7 +66,7 @@
           "format-disabled": "",
           "format-connected": "\uf293 {device_alias}",
           "format-no-controller": "",
-          "tooltip-format": "{controller_alias}\\n{device_alias}",
+          "tooltip-format": "{controller_alias}\n{device_alias}",
           "on-click": "blueman-manager"
         },
         "pulseaudio": {
@@ -275,7 +275,7 @@
 Reboot
 Lock
 Logout"
-      selected=$(echo -e "$entries" | wofi --width 200 --height 250 --dmenu --cache-file /dev/null --prompt "Power Menu")
+      selected=$(echo -e "$entries" | wofi --width 300 --height 350 --dmenu --cache-file /dev/null --prompt "Power Menu")
       case $selected in
           Shutdown) systemctl poweroff ;;
           Reboot) systemctl reboot ;;
@@ -315,43 +315,33 @@ Logout"
     executable = true;
   };
 
-  
-
-
 xdg.configFile."waybar/scripts/net-speed.sh" = {
     text = ''
       #!/usr/bin/env bash
       ICON_DOWN=$(printf '\xef\x81\xa3')
       ICON_UP=$(printf '\xef\x81\xa2')
-
-      INTERFACE=$(ip route get 8.8.8.8 2>/dev/null | awk '{print $5; exit}')
-      [ -z "$INTERFACE" ] && echo "{\"text\": \"$ICON_DOWN 0 $ICON_UP 0\", \"tooltip\": \"No connection\"}" && exit 0
-
-      LINE=$(grep "$INTERFACE" /proc/net/dev 2>/dev/null | sed 's/.*://')
-      [ -z "$LINE" ] && echo "{\"text\": \"$ICON_DOWN 0 $ICON_UP 0\"}" && exit 0
-
-      RX1=$(echo "$LINE" | awk '{print $1}')
-      TX1=$(echo "$LINE" | awk '{print $9}')
+      get_speed() {
+        awk '/:/ { if ($1 != "lo:") { rx += $2; tx += $10 } }
+        END { printf "%d %d", rx, tx }' /proc/net/dev
+      }
+      read RX1 TX1 <<< "$(get_speed)"
       sleep 1
-      LINE=$(grep "$INTERFACE" /proc/net/dev | sed 's/.*://')
-      RX2=$(echo "$LINE" | awk '{print $1}')
-      TX2=$(echo "$LINE" | awk '{print $9}')
-
+      read RX2 TX2 <<< "$(get_speed)"
+      if [ -z "$RX1" ] || [ -z "$TX1" ]; then
+        echo "{\"text\": \"$ICON_DOWN 0 $ICON_UP 0\", \"tooltip\": \"No connection\"}" && exit 0
+      fi
       RX_SPEED=$(( (RX2 - RX1) / 1024 ))
       TX_SPEED=$(( (TX2 - TX1) / 1024 ))
-
       if [ "$RX_SPEED" -ge 1024 ]; then
         RX_DISP="$((RX_SPEED / 1024)).$(((RX_SPEED % 1024) * 10 / 1024))MB"
       else
         RX_DISP="''${RX_SPEED}KB"
       fi
-
       if [ "$TX_SPEED" -ge 1024 ]; then
         TX_DISP="$((TX_SPEED / 1024)).$(((TX_SPEED % 1024) * 10 / 1024))MB"
       else
         TX_DISP="''${TX_SPEED}KB"
       fi
-
       echo "{\"text\": \"$ICON_DOWN $RX_DISP $ICON_UP $TX_DISP\"}"
     '';
     executable = true;
@@ -362,7 +352,7 @@ xdg.configFile."waybar/scripts/net-speed.sh" = {
       #!/usr/bin/env bash
       PROFILES=$(powerprofilesctl list | grep -oP '^(\s{2}|\* )\K\S+(?=:)')
       MENU=$(echo "$PROFILES" | while IFS= read -r p; do echo "$p"; done)
-      SELECTED=$(echo "$MENU" | wofi --dmenu --prompt "Power Profile" --width 300 --height 200)
+      SELECTED=$(echo "$MENU" | wofi --dmenu --prompt "Power Profile" --width 450 --height 300)
       [ -z "$SELECTED" ] && exit 0
       powerprofilesctl set "$SELECTED"
     '';
@@ -382,7 +372,7 @@ xdg.configFile."waybar/scripts/net-speed.sh" = {
               print(f'{parts[0]}\t{escaped}')
           else:
               print(l)
-      " | wofi --dmenu --prompt Clipboard | cliphist decode | wl-copy
+      " | wofi --dmenu --prompt Clipboard --width 900 --height 650 | cliphist decode | wl-copy
     '';
     executable = true;
   };
@@ -393,7 +383,7 @@ xdg.configFile."waybar/scripts/net-speed.sh" = {
       #!/usr/bin/env bash
       entries="Memory Info
 Clear RAM Cache"
-      selected=$(echo -e "$entries" | wofi --dmenu --prompt "Memory Manager" --width 300 --height 200 --cache-file /dev/null)
+      selected=$(echo -e "$entries" | wofi --dmenu --prompt "Memory Manager" --width 450 --height 300 --cache-file /dev/null)
       case $selected in
           "Memory Info")
               kitty --class floating-term -o initial_window_width=80c -o initial_window_height=24c -e bash -c 'free -h; echo; echo "Press Enter to exit"; read'
@@ -512,7 +502,7 @@ Clear RAM Cache"
 
       entries=$(grep -E '^\s*bind[el]*\s*=' "$CONFIG" |         sed 's/\$mod/Super/g' |         sed 's/^[[:space:]]*bind[el]*\s*=\s*//' |         sed 's/exec, //' |         sed 's/submap, //')
 
-      echo "$entries" | wofi --dmenu --prompt "Keybinds (Escape to close)" --width 900 --height 600 --cache-file /dev/null
+      echo "$entries" | wofi --dmenu --prompt "Keybinds (Escape to close)" --width 1200 --height 750 --cache-file /dev/null
     '';
     executable = true;
   };

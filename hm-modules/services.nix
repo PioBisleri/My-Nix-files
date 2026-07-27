@@ -25,6 +25,11 @@
     };
   };
 
+  programs.direnv = {
+  enable = true;
+  nix-direnv.enable = true;
+  };
+
   xdg.configFile."waybar/scripts/battery-monitor.sh" = {
     executable = true;
     text = ''
@@ -96,7 +101,6 @@
       Description = "Voxtype push-to-talk voice-to-text daemon";
       Documentation = "https://voxtype.io";
       After = [ "graphical-session.target" ];
-      PartOf = [ "graphical-session.target" ];
     };
     Service = {
       Type = "simple";
@@ -107,6 +111,28 @@
     Install = {
       WantedBy = [ "graphical-session.target" ];
     };
+  };
+
+  systemd.user.services.voxtype-watchdog = {
+    Unit = {
+      Description = "Voxtype watchdog - restart if dead";
+    };
+    Service = {
+      Type = "oneshot";
+      ExecStart = "${pkgs.bash}/bin/bash -c 'if ! systemctl --user is-active -q voxtype; then systemctl --user start voxtype; fi'";
+    };
+    Install.WantedBy = [ "default.target" ];
+  };
+
+  systemd.user.timers.voxtype-watchdog = {
+    Unit = {
+      Description = "Periodic voxtype health check (every 2 min)";
+    };
+    Timer = {
+      OnCalendar = "*:0/2";
+      Persistent = true;
+    };
+    Install.WantedBy = [ "timers.target" ];
   };
 
   xdg.configFile."voxtype/config.toml" = {

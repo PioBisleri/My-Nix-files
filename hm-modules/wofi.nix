@@ -1,8 +1,8 @@
 { config, pkgs, ... }: {
 
   xdg.configFile."wofi/config".text = ''
-    width=600
-    height=450
+    width=900
+    height=650
     location=center
     show=drun
     prompt=Apps
@@ -14,16 +14,16 @@
     content_halign=fill
     insensitive=false
     allow_images=true
-    image_size=32
+    image_size=48
     gtk_dark=true
     term=kitty
   '';
 
   xdg.configFile."wofi/wallpaper-config".text = ''
-    width=600
-    height=400
+    width=900
+    height=600
     allow_images=true
-    image_size=400
+    image_size=500
     filter_rate=100
     gtk_dark=true
   '';
@@ -43,8 +43,8 @@
       border-radius: 8px;
       background-color: #313244;
       color: #cdd6f4;
-      font-size: 14px;
-      padding: 8px 12px;
+      font-size: 16px;
+      padding: 12px 16px;
     }
 
     #input:focus {
@@ -70,10 +70,10 @@
     }
 
     #text {
-      margin: 4px 8px;
+      margin: 8px 14px;
       border: none;
       color: #cdd6f4;
-      font-size: 13px;
+      font-size: 24px;
     }
 
     #text:selected {
@@ -81,11 +81,11 @@
     }
 
     #entry {
-      margin: 2px 4px;
+      margin: 6px 8px;
       border: none;
       border-radius: 8px;
       background-color: transparent;
-      padding: 4px;
+      padding: 10px;
     }
 
     #entry:selected {
@@ -95,7 +95,7 @@
     }
 
     #img {
-      margin: 4px 8px;
+      margin: 8px 14px;
     }
   '';
 

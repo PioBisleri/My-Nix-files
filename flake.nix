@@ -1,50 +1,36 @@
 {
   description = "NixOS configuration for veer";
-
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
     
     home-manager = {
-      url = "github:nix-community/home-manager";
+      url = "github:nix-community/home-manager/release-26.05";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-
-    hermes-agent.url = "github:NousResearch/hermes-agent";
-
-
-    # Add the fetch flake input here
     areofyl-fetch.url = "github:areofyl/fetch";
-
     sops-nix = {
       url = "github:Mic92/sops-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
-
-  outputs = { self, nixpkgs, home-manager, areofyl-fetch, sops-nix, hermes-agent, ... }@inputs:
+  outputs = { self, nixpkgs, home-manager, areofyl-fetch, sops-nix, ... }@inputs:
     let
       vars = import ./vars.nix;
     in {
       nixosConfigurations.${vars.hostname} = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
       
-      # Pass inputs to configuration.nix so it can use them
       specialArgs = { inherit inputs vars; };
-
       modules = [
         ./configuration.nix
-	hermes-agent.nixosModules.default
         
-        # Home Manager module
         home-manager.nixosModules.home-manager
         {
           home-manager.useGlobalPkgs = true;
           home-manager.useUserPackages = true;
           
-          # Point to veer's home.nix
           home-manager.users.${vars.username} = import ./home.nix;
           
-          # Make inputs available in home.nix
           home-manager.extraSpecialArgs = { inherit inputs vars; };
         }
       ];

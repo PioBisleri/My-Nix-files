@@ -63,9 +63,11 @@
 
     # --- Launcher shortcuts ---
     bind = $mod, E, exec, thunar
+    bind = $mod, O, exec, obsidian 
     bind = $mod SHIFT, E, exec, wofi-emoji
     bind = $mod, T, exec, kitty --class floating-term -o initial_window_width=80c -o initial_window_height=24c
     bind = $mod SHIFT, B, exec, brave --new-window
+    bind = $mod CTRL, B, exec, brave --incognito
     bind = $mod, W, exec, ~/.config/waybar/scripts/wallpaper-select.sh
 
     # --- Web apps ---
@@ -149,6 +151,8 @@
     # --- Workspace navigation ---
     bind = $mod, Tab, workspace, +1
     bind = $mod SHIFT, Tab, workspace, -1
+    bind = $mod, mouse_up, workspace, +1
+    bind = $mod, mouse_down, workspace, -1
     bind = $mod SHIFT, minus, movetoworkspace, empty
 
     # --- Mouse bindings ---

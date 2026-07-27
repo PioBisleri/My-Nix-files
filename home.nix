@@ -5,6 +5,7 @@
   imports = [
     inputs.areofyl-fetch.homeManagerModules.default
     ./hm-modules/packages.nix
+    ./hm-modules/default-apps.nix
     ./hm-modules/zsh.nix
     ./hm-modules/git.nix
     ./hm-modules/gtk.nix
