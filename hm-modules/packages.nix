@@ -28,7 +28,7 @@
     swappy                 # Screenshot annotation / quick-edit tool
     grim                   # Wayland screenshot capture
     slurp                  # Wayland region/highlight selector
-    mako                   # Lightweight Wayland notification daemon
+    swaynotificationcenter # Sway notification center with history panel
     hyprlock               # Hyprland-native screen locker
     hypridle               # Hyprland idle management daemon
     cliphist               # Wayland clipboard history manager

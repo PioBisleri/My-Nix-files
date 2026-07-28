@@ -493,18 +493,4 @@ Clear RAM Cache"
     executable = true;
   };
 
-
-  xdg.configFile."waybar/scripts/keybinds.sh" = {
-    text = ''
-      #!/usr/bin/env bash
-      CONFIG="$HOME/.config/hypr/hyprland.conf"
-      [ -f "$CONFIG" ] || { notify-send "Keybinds" "Config not found"; exit 1; }
-
-      entries=$(grep -E '^\s*bind[el]*\s*=' "$CONFIG" |         sed 's/\$mod/Super/g' |         sed 's/^[[:space:]]*bind[el]*\s*=\s*//' |         sed 's/exec, //' |         sed 's/submap, //')
-
-      echo "$entries" | wofi --dmenu --prompt "Keybinds (Escape to close)" --width 1200 --height 750 --cache-file /dev/null
-    '';
-    executable = true;
-  };
-
 }

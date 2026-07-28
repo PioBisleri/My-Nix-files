@@ -42,7 +42,7 @@
     $screenshot = hyprshot -m region
 
     # Autostart
-    exec-once = bash -c 'awww-daemon & sleep 0.3; SYMLINK=$HOME/.cache/current-wallpaper.jpg; mkdir -p "$(dirname "$SYMLINK")"; if ! [ -f "$SYMLINK" ]; then for f in "$HOME"/Pictures/wallpaper/*; do [ -f "$f" ] && ln -sf "$f" "$SYMLINK" && break; done; fi; awww restore 2>/dev/null || awww img --transition-type none "$SYMLINK"; waybar & mako &'
+    exec-once = bash -c 'awww-daemon & sleep 0.3; SYMLINK=$HOME/.cache/current-wallpaper.jpg; mkdir -p "$(dirname "$SYMLINK")"; if ! [ -f "$SYMLINK" ]; then for f in "$HOME"/Pictures/wallpaper/*; do [ -f "$f" ] && ln -sf "$f" "$SYMLINK" && break; done; fi; awww restore 2>/dev/null || awww img --transition-type none "$SYMLINK"; waybar & swaync &'
     exec-once = wl-paste --type text --watch cliphist store
     exec-once = wl-paste --type image --watch cliphist store
     exec-once = /run/current-system/sw/bin/polkit-gnome-authentication-agent-1
@@ -63,7 +63,7 @@
 
     # --- Launcher shortcuts ---
     bind = $mod, E, exec, thunar
-    bind = $mod, O, exec, obsidian 
+    bind = $mod, O, exec, obsidian
     bind = $mod SHIFT, E, exec, wofi-emoji
     bind = $mod, T, exec, kitty --class floating-term -o initial_window_width=80c -o initial_window_height=24c
     bind = $mod SHIFT, B, exec, brave --new-window
@@ -71,12 +71,12 @@
     bind = $mod, W, exec, ~/.config/waybar/scripts/wallpaper-select.sh
 
     # --- Web apps ---
-    bind = $mod, A, exec, bash -c 'mkdir -p ~/.config/webapps/gemini && brave --app=https://gemini.google.com --user-data-dir=$HOME/.config/webapps/gemini'
-    bind = $mod, D, exec, bash -c 'mkdir -p ~/.config/webapps/discord && brave --app=https://discord.com/app --user-data-dir=$HOME/.config/webapps/discord'
-    bind = $mod, I, exec, bash -c 'mkdir -p ~/.config/webapps/instagram && brave --app=https://instagram.com --user-data-dir=$HOME/.config/webapps/instagram'
-    bind = $mod, N, exec, bash -c 'mkdir -p ~/.config/webapps/notebooklm && brave --app=https://notebooklm.google.com --user-data-dir=$HOME/.config/webapps/notebooklm'
-    bind = $mod SHIFT, Y, exec, bash -c 'mkdir -p ~/.config/webapps/ytmusic && brave --app=https://music.youtube.com --user-data-dir=$HOME/.config/webapps/ytmusic'
-    bind = $mod SHIFT, W, exec, bash -c 'mkdir -p ~/.config/webapps/whatsapp && brave --app=https://web.whatsapp.com --user-data-dir=$HOME/.config/webapps/whatsapp'
+    bind = $mod, A, exec, brave --app=https://gemini.google.com --user-data-dir=$HOME/.config/webapps/gemini
+    bind = $mod, D, exec, brave --app=https://discord.com/app --user-data-dir=$HOME/.config/webapps/discord
+    bind = $mod, I, exec, brave --app=https://instagram.com --user-data-dir=$HOME/.config/webapps/instagram
+    bind = $mod, N, exec, brave --app=https://notebooklm.google.com --user-data-dir=$HOME/.config/webapps/notebooklm
+    bind = $mod SHIFT, Y, exec, brave --app=https://music.youtube.com --user-data-dir=$HOME/.config/webapps/ytmusic
+    bind = $mod SHIFT, W, exec, brave --app=https://web.whatsapp.com --user-data-dir=$HOME/.config/webapps/whatsapp
 
     # --- Screenshots ---
     bind = $mod SHIFT, S, exec, ~/.config/waybar/scripts/screenshot.sh region
@@ -97,6 +97,7 @@
     bind = $mod ALT, R, exec, hyprctl reload
 
     bind = $mod, K, exec, ~/.config/waybar/scripts/keybinds.sh
+    bind = $mod CTRL, N, exec, swaync-client -t -sw
 
     bind = CTRL SHIFT, Escape, exec, kitty -e btop
 
@@ -250,5 +251,4 @@
     # Exit resize mode to prevent weird state
     bind = $mod, R, submap, resize
   '';
-
 }

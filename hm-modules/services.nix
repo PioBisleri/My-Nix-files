@@ -1,33 +1,176 @@
 { config, pkgs, ... }: {
 
-  services.mako = {
+  services.swaync = {
     enable = true;
     settings = {
-      background-color = "#1e1e2e";
-      text-color = "#cdd6f4";
-      border-color = "#cba6f7";
-      border-radius = 10;
-      border-size = 2;
-      default-timeout = 5000;
-      ignore-timeout = true;
-      markup = true;
-      font = "JetBrainsMono Nerd Font 11";
-      padding = "12,16";
-      margin = "8,8";
-      width = 350;
-      height = 120;
-      max-visible = 5;
-      anchor = "top-right";
-      layer = "overlay";
-      group-by = "category";
-      sort = "+time";
-      actions = true;
+      positionX = "right";
+      positionY = "top";
+      control-center-margin-top = 8;
+      control-center-margin-right = 8;
+      control-center-margin-bottom = 8;
+      control-center-margin-left = 8;
+      notification-icon-size = 32;
+      notification-body-image-height = 100;
+      notification-body-image-width = 200;
+      timeout = 5;
+      timeout-low = 3;
+      timeout-critical = 0;
+      fit-to-screen = true;
+      control-center-width = 400;
+      control-center-height = 600;
+      notification-window-width = 350;
+      keyboard-shortcuts = true;
+      image-visibility = "when-available";
+      transition-time = 200;
+      hide-on-clear = true;
+      hide-on-action = true;
+      script-fail-notify = true;
+      widgets = [
+        "title"
+        "dnd"
+        "notifications"
+        "buttonsGrid"
+      ];
+      widget-config = {
+        title = {
+          text = "Notifications";
+          clear-all-button = true;
+          button-text = "Clear All";
+        };
+        dnd = {
+          text = "Do Not Disturb";
+        };
+        buttonsGrid = {
+          actions = [
+            {
+              label = "󰂯";
+              type = "toggle-dnd";
+            }
+            {
+              label = "󰍜";
+              type = "toggle-notification-center";
+            }
+            {
+              label = "󰆴";
+              type = "clear-all-notifications";
+            }
+          ];
+        };
+      };
     };
+    style = ''
+      * {
+        all: unset;
+        font-family: "JetBrainsMono Nerd Font";
+      }
+      .notification-row {
+        outline: none;
+        margin: 0;
+        padding: 0;
+      }
+      .notification {
+        background: #1e1e2e;
+        border: 2px solid #cba6f7;
+        border-radius: 10px;
+        margin: 4px 8px;
+        padding: 8px;
+      }
+      .notification.critical {
+        border-color: #f38ba8;
+      }
+      .notification-content {
+        background: transparent;
+        padding: 4px;
+      }
+      .summary {
+        font-size: 14px;
+        font-weight: bold;
+        color: #cdd6f4;
+        margin: 0;
+        padding: 0;
+      }
+      .body {
+        font-size: 12px;
+        color: #a6adc8;
+        margin-top: 4px;
+        padding: 0;
+      }
+      .icon {
+        margin-right: 8px;
+      }
+      .control-center {
+        background: #1e1e2e;
+        border: 2px solid #cba6f7;
+        border-radius: 10px;
+        margin: 8px;
+        padding: 8px;
+      }
+      .control-center-list {
+        background: transparent;
+      }
+      .control-center-list-placeholder {
+        color: #a6adc8;
+        font-size: 12px;
+        margin: 16px;
+        text-align: center;
+      }
+      .widget-title {
+        color: #cdd6f4;
+        font-size: 16px;
+        font-weight: bold;
+        margin: 8px;
+        padding: 4px;
+      }
+      .widget-title button {
+        background: #45475a;
+        border: none;
+        border-radius: 8px;
+        color: #cdd6f4;
+        font-size: 12px;
+        padding: 4px 12px;
+      }
+      .widget-title button:hover {
+        background: #cba6f7;
+        color: #1e1e2e;
+      }
+      .widget-dnd {
+        color: #a6adc8;
+        font-size: 12px;
+        margin: 8px;
+        padding: 4px;
+      }
+      .widget-dnd > switch {
+        background: #45475a;
+        border-radius: 8px;
+      }
+      .widget-dnd > switch:checked {
+        background: #cba6f7;
+      }
+      .widget-buttons-grid {
+        margin: 8px;
+        padding: 4px;
+      }
+      .widget-buttons-grid > button {
+        background: #45475a;
+        border: none;
+        border-radius: 8px;
+        color: #cdd6f4;
+        font-size: 16px;
+        margin: 2px;
+        padding: 8px;
+        min-width: 40px;
+        min-height: 40px;
+      }
+      .widget-buttons-grid > button:hover {
+        background: #cba6f7;
+        color: #1e1e2e;
+      }
+    '';
   };
 
   programs.direnv = {
-  enable = true;
-  nix-direnv.enable = true;
+    enable = true;
+    nix-direnv.enable = true;
   };
 
   xdg.configFile."waybar/scripts/battery-monitor.sh" = {
@@ -53,6 +196,11 @@
     Service = {
       Type = "oneshot";
       ExecStart = "%h/.config/waybar/scripts/battery-monitor.sh";
+      Environment = [
+        "DISPLAY=:1"
+        "WAYLAND_DISPLAY=wayland-1"
+        "DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus"
+      ];
     };
     Install.WantedBy = [ "default.target" ];
   };
