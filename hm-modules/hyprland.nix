@@ -56,7 +56,6 @@
     bind = $mod SHIFT, V, exec, /home/veer/.config/waybar/scripts/clipboard.sh
     bind = $mod, B, exec, brave
     bind = $mod, Q, killactive,
-    bind = $mod, M, exit,
     bind = $mod, Space, exec, $menu
     bind = $mod, V, togglefloating,
     bind = $mod, F, fullscreen,

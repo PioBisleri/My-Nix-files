@@ -76,7 +76,14 @@
         padding: 8px;
       }
       .notification.critical {
-        border-color: #f38ba8;
+        background: rgba(243, 139, 168, 0.15);
+        border: 3px solid #f38ba8;
+      }
+      .notification.critical .summary {
+        color: #f38ba8;
+      }
+      .notification.critical .body {
+        color: #f9e2af;
       }
       .notification-content {
         background: transparent;
@@ -255,6 +262,11 @@
       ExecStart = "${pkgs.voxtype-vulkan}/bin/voxtype daemon";
       Restart = "always";
       RestartSec = 2;
+      Environment = [
+        "WAYLAND_DISPLAY=wayland-1"
+        "DISPLAY=:1"
+        "DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus"
+      ];
     };
     Install = {
       WantedBy = [ "graphical-session.target" ];

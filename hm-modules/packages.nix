@@ -15,6 +15,7 @@
     fd                     # Fast user-friendly find alternative
     unzip                  # Extract ZIP archives
     unrar                  # Extract RAR archives
+    opencode               # AI coding assistant for terminal
     gnumake                # Build automation tool
     curl                   # Data transfer with URL syntax
     kitty                  # GPU-accelerated terminal emulator

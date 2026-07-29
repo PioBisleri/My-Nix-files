@@ -1,7 +1,16 @@
 { config, pkgs, vars, ... }: {
 
-  boot.loader.systemd-boot.enable = true;
-  boot.loader.efi.canTouchEfiVariables = true;
+  boot.loader = {
+    systemd-boot.enable = false;
+    grub = {
+      enable = true;
+      device = "nodev";
+      efiSupport = true;
+      efiInstallAsRemovable = true;
+      configurationLimit = 10;
+      theme = pkgs.catppuccin-grub;
+    };
+  };
 
   networking.hostName = vars.hostname;
   networking.networkmanager.enable = true;

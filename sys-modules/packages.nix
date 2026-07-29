@@ -7,7 +7,6 @@
   environment.systemPackages = with pkgs; [
     wget                   # Non-interactive network downloader
     yazi                   # Blazing-fast terminal file manager
-    opencode               # AI coding assistant for terminal
     obsidian               # Knowledge base / note-taking app
     python3                # Python 3 interpreter
     voxtype-vulkan         # Push-to-talk voice-to-text daemon (Vulkan)
@@ -18,6 +17,7 @@
     docker                 # Container runtime & orchestration
     dconf-editor           # Low-level GNOME settings editor
     gimp                   # GNU Image Manipulation Program
+    sherpa-onnx            # Offline TTS engine (sherpa-onnx-offline-tts)
   ];
 
 }
