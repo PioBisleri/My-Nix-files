@@ -90,6 +90,7 @@
     kdePackages.kdenlive   # Qt video editor with VAAPI GPU acceleration
     inkscape               # Vector graphics editor
     audacity               # Sound editor with graphical UI
+    typora                 # A minimal Markdown editor and reader
   ];
 
   home.pointerCursor = {

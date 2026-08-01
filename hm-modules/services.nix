@@ -189,9 +189,13 @@
       capacity=$(cat "$BAT/capacity")
       status=$(cat "$BAT/status")
       profile=$(powerprofilesctl get 2>/dev/null)
-      if [ "$status" = "Discharging" ] && [ "$capacity" -lt 20 ] && [ "$profile" != "power-saver" ]; then
-        powerprofilesctl set power-saver
-        notify-send -u critical "Battery Low" "Battery at ''${capacity}% - switched to power-saver"
+      if [ "$status" = "Discharging" ] && [ "$capacity" -lt 20 ]; then
+        if [ "$profile" != "power-saver" ]; then
+          powerprofilesctl set power-saver
+          notify-send -u critical "Battery Low" "Battery at ''${capacity}% - switched to power-saver"
+        else
+          notify-send -u critical "Battery Low" "Battery at ''${capacity}%"
+        fi
       fi
     '';
   };

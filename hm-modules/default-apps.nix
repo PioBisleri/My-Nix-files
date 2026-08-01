@@ -20,7 +20,7 @@
 
     # --- Text / Code ---
     "text/plain" = "nvim.desktop";
-    "text/markdown" = "nvim.desktop";
+    "text/markdown" = "typora.desktop";
     "text/csv" = "nvim.desktop";
     "text/tab-separated-values" = "nvim.desktop";
     "text/x-nix" = "nvim.desktop";
