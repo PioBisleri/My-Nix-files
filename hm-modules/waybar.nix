@@ -1,4 +1,4 @@
-{ config, pkgs, ... }: {
+{ config, pkgs, vars, ... }: {
 
   xdg.configFile."waybar/config" = {
     text = ''
@@ -38,7 +38,7 @@
           "exec": "top -bn1 | grep 'Cpu(s)' | awk '{print $2}' | cut -d'%' -f1",
           "interval": 5,
           "tooltip": false,
-          "on-click": "kitty --class floating-term -o initial_window_width=80c -o initial_window_height=24c -e btop"
+          "on-click": "kitty --class floating-term -o initial_window_width=80c -o initial_window_height=30c -e btop"
         },
         "custom/memory": {
           "return-type": "json",
@@ -49,7 +49,7 @@
           "on-click": "~/.config/waybar/scripts/memory-manager.sh"
         },
         "custom/net-speed": {
-          "exec": "/home/veer/.config/waybar/scripts/net-speed.sh",
+          "exec": "/home/${vars.username}/.config/waybar/scripts/net-speed.sh",
           "interval": 2,
           "return-type": "json",
           "tooltip": false
@@ -85,7 +85,7 @@
           "format-charging": "\uf0e7 {capacity}%",
           "tooltip-format": "{timeTo}",
           "interval": 60,
-          "on-click": "/home/veer/.config/waybar/scripts/power-profiles.sh"
+          "on-click": "/home/${vars.username}/.config/waybar/scripts/power-profiles.sh"
         },
         "custom/power": {
           "format": "\uf011",
@@ -405,7 +405,7 @@ Clear RAM Cache"
   xdg.configFile."waybar/scripts/screenshot.sh" = {
     text = ''
       #!/usr/bin/env bash
-      DIR=/home/veer/Pictures/Screenshots
+      DIR=/home/${vars.username}/Pictures/Screenshots
       NAME=shot_$(date +%Y%m%d_%H%M%S).png
       mkdir -p "$DIR"
       FILE=$DIR/$NAME

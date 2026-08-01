@@ -206,7 +206,7 @@
       Environment = [
         "DISPLAY=:1"
         "WAYLAND_DISPLAY=wayland-1"
-        "DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus"
+        "DBUS_SESSION_BUS_ADDRESS=unix:path=%t/bus"
       ];
     };
     Install.WantedBy = [ "default.target" ];
@@ -265,7 +265,7 @@
       Environment = [
         "WAYLAND_DISPLAY=wayland-1"
         "DISPLAY=:1"
-        "DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus"
+        "DBUS_SESSION_BUS_ADDRESS=unix:path=%t/bus"
       ];
     };
     Install = {

@@ -1,9 +1,9 @@
-{ config, pkgs, ... }: {
+{ config, pkgs, vars, ... }: {
 
   xdg.configFile."hypr/hyprlock.conf".text = ''
     background {
       monitor =
-      path = /home/veer/.cache/current-wallpaper.jpg
+      path = /home/${vars.username}/.cache/current-wallpaper.jpg
       blur_passes = 3
       blur_size = 8
       brightness = 0.7
