@@ -71,7 +71,7 @@
 
     # --- Web apps ---
     bind = $mod, A, exec, brave --app=https://gemini.google.com --user-data-dir=$HOME/.config/webapps/gemini
-    bind = $mod, D, exec, brave --app=https://discord.com/app --user-data-dir=$HOME/.config/webapps/discord
+    bind = $mod, D, exec, discord >/dev/null 2>&1 & disown 
     bind = $mod, I, exec, brave --app=https://instagram.com --user-data-dir=$HOME/.config/webapps/instagram
     bind = $mod, N, exec, brave --app=https://notebooklm.google.com --user-data-dir=$HOME/.config/webapps/notebooklm
     bind = $mod SHIFT, Y, exec, brave --app=https://music.youtube.com --user-data-dir=$HOME/.config/webapps/ytmusic
@@ -249,5 +249,11 @@
 
     # Exit resize mode to prevent weird state
     bind = $mod, R, submap, resize
+  '';
+
+  xdg.configFile."hypr/xdph.conf".text = ''
+    screencopy {
+        force_shm = true
+    }
   '';
 }

@@ -22,12 +22,14 @@ The configuration is split into two layers: system-level NixOS modules under `sy
 - **Screen recording** toggle with wf-recorder.
 - **Battery monitoring** with automatic power-saver profile switching.
 - **SSH agent** enabled.
-- **Web application shortcuts** for Gemini, Discord, Instagram, NotebookLM, YouTube Music, and WhatsApp, each running as a dedicated Brave app with isolated user data directories.
+- **Web application shortcuts** for Gemini, Instagram, NotebookLM, YouTube Music, and WhatsApp, each running as a dedicated Brave app with isolated user data directories. Discord is a native app.
 - **Emoji picker** via wofi-emoji, keybound to Super+Shift+E.
 - **Keybind reference** — Super+K opens a Wofi window listing all current Hyprland keybindings.
 - **Secret management** with sops-nix, using age encryption backed by an ed25519 SSH key. Secrets are decrypted at activation time and mounted under `/run/secrets/`.
 - **Dedicated gaming module** with 32-bit graphics support, Gamemode, MangoHud overlay, Gamescope micro-compositor, Lutris game manager, winetricks, and ProtonUP-Qt, plus kernel optimizations for modded games.
 - **Comprehensive MIME associations** covering browser, terminal, code editors, documents, images, video, audio, archives, torrents, and AppImage files.
+- **Purge TUI** — a Catppuccin Mocha disk cleaner with Storage, Memory, Processes, and Logs tabs, built as a self-contained Nix derivation that embeds its own Rust sources (see `sys-modules/purge.nix`).
+- **ZeroTier VPN** — client daemon that auto-joins a private network set in `vars.zerotierNetwork` (see `sys-modules/zerotier.nix`).
 
 ---
 
@@ -62,6 +64,8 @@ The configuration is split into two layers: system-level NixOS modules under `sy
 |   |-- gaming.nix                    # Gamemode, MangoHud, Gamescope, Lutris, kernel tuning
 |   |-- thunar.nix                    # Thunar file manager, MTP udev rules
 |   |-- secrets.nix                   # sops-nix system-level secret module
+|   |-- purge.nix                     # Self-contained Purge TUI with embedded Rust sources
+|   |-- zerotier.nix                  # ZeroTier VPN client (joins vars.zerotierNetwork)
 |
 |-- hm-modules/                       # User-level Home Manager modules
     |-- packages.nix                  # User packages, cursor, desktop entries, Yazi config
@@ -74,7 +78,7 @@ The configuration is split into two layers: system-level NixOS modules under `sy
     |-- kitty.nix                     # Kitty terminal with Catppuccin colors and blur
     |-- waybar.nix                    # Waybar bar config, CSS styling, and 9 utility scripts
     |-- wofi.nix                      # Wofi launcher and wallpaper picker config
-    |-- services.nix                  # Mako, Hypridle, battery monitor, SSH agent, Voxtype
+    |-- services.nix                  # swaync, Hypridle, battery monitor, SSH agent, Voxtype
     |-- secrets.nix                   # sops-nix user-level secret module
 ```
 
@@ -143,8 +147,10 @@ A single file holding all user-specific values. Edit this file to adapt the conf
 | timezone   | `"Asia/Kolkata"` | System timezone (IANA format)   |
 | fullName   | `"Veer"`        | User's full name for account description and Git |
 | email      | `"veer@nixos"`  | Email address for Git commits   |
+| zerotierNetwork | `"PUT_IN_THE_HEX_CODE"` | 16-hex-digit ZeroTier network ID auto-joined at boot |
 
 These values are injected into both NixOS and Home Manager modules via `specialArgs` and `extraSpecialArgs` in `flake.nix`.
+`zerotierNetwork` is consumed by `sys-modules/zerotier.nix`.
 
 The configuration uses an ed25519 SSH key (`~/.ssh/id_ed25519`) converted to an age key for sops-nix secret decryption.
 
@@ -156,12 +162,12 @@ The configuration uses an ed25519 SSH key (`~/.ssh/id_ed25519`) converted to an 
 
 Configures the base system:
 
-- **Bootloader**: systemd-boot with EFI variable write access.
+- **Bootloader**: GRUB on EFI, installed as a removable device image (`efiInstallAsRemovable`), with the Catppuccin GRUB theme and a 10-generation configuration limit.
 - **Networking**: hostname from `vars.hostname`, NetworkManager enabled for network management (with ProtonVPN IPv6 leak protection interface unmanaged).
 - **Firewall**: enabled, ping allowed.
 - **Timezone**: set from `vars.timezone`.
 - **Locale**: en_US.UTF-8 only.
-- **Nix**: enables `nix-command` and `flakes` experimental features; HTTP/2 disabled; limited concurrent downloads; weekly GC (14-day threshold) and store optimisation.
+- **Nix**: enables `nix-command` and `flakes` experimental features; HTTP/2 disabled; capped substitutions (4) and HTTP connections (25); weekly GC (14-day threshold) and store optimisation.
 - **Unfree software**: allows packages with unfree licenses.
 - **Power profiles**: power-profiles-daemon for performance/balanced/power-saver switching.
 - **Shell**: Zsh enabled system-wide.
@@ -175,6 +181,7 @@ Configures the display server and compositor:
 - **SDDM**: display manager enabled (full theme configuration in `sddm.nix`).
 - **Keyboard layout**: US layout.
 - **Hyprland**: enabled via `programs.hyprland`.
+- **XDG Desktop Portal**: enabled with `hyprland` as the default portal (`xdg-desktop-portal-hyprland`), plus the GTK portal via `xdg-desktop-portal-gtk`, and `xdgOpenUsePortal` for file/app URIs. Also writes a `hypr/xdph.conf` forcing the screencopy portal to shared memory (`force_shm = true`).
 
 #### audio.nix
 
@@ -208,7 +215,8 @@ Configures the primary user account:
 Installs system-wide packages:
 
 - **Nerd Font**: JetBrainsMono Nerd Font (used by terminal, bar, launcher, and prompt).
-- **System packages**: wget, yazi, opencode (AI coding assistant), obsidian, python3, voxtype-vulkan (speech-to-text), wtype (Wayland keystroke injection), libnotify (desktop notifications), nodejs, jdk21, docker, dconf-editor, gimp.
+- **System packages**: purge (system cleaner TUI), wget, yazi (terminal file manager), obsidian, python3, nodejs, jdk17, jdk21, jdk25 (Java toolchain), wine-staging (Windows compatibility), docker, dconf-editor, gimp, sherpa-onnx (offline TTS engine).
+- **Voice I/O**: voxtype-vulkan (push-to-talk speech-to-text daemon) and wtype (Wayland keystroke injection) for the TTS/STT workflow.
 
 #### sddm.nix
 
@@ -244,6 +252,31 @@ System-level sops-nix secret management:
 - **SSH key path**: points to `/home/{username}/.ssh/id_ed25519` for age decryption.
 - **Default file**: reads from `secrets/system.yaml`.
 
+#### purge.nix
+
+A self-contained Purge TUI disk cleaner, shipped as a single Nix file that generates and compiles its own Rust sources at build time (no workspace or dev tree needed):
+
+- **Tabs**: Storage (scan/clean targets), Memory (RAM/swap/page-cache gauges), Processes (top processes), Logs (job history).
+- **Root ops**: drop caches and clear swap use `sudo -n`; press `r` on the Memory tab to re-authenticate interactively.
+- **Sudo status**: cached in the app and refreshed every 1.5s, keeping the "cached/not cached" indicator responsive without spawning `sudo` every frame.
+- **How to use**:
+  ```bash
+  purge                  # launch the TUI
+  ```
+  Storage tab: `s` scan, `space` select, `c` clean; Memory tab: `d` drop caches, `w` clear swap.
+  Rebuild after making changes:
+  ```bash
+  sudo nixos-rebuild switch --flake /etc/nixos#nixos
+  ```
+  The embedded Rust sources can be edited directly in the module; no generator is required.
+
+#### zerotier.nix
+
+Configures the ZeroTier VPN client:
+
+- **`services.zerotierone.enable`**: starts the ZeroTier daemon.
+- **`joinNetworks`**: auto-joins the network ID from `vars.zerotierNetwork`. Set it in `vars.nix` to the 16-hex-digit network (default is a "PUT_IN_THE_HEX_CODE" placeholder).
+
 ---
 
 ### Home Manager Modules (hm-modules/)
@@ -253,9 +286,9 @@ System-level sops-nix secret management:
 Configures user-level packages and desktop environment:
 
 - **Session variables**: EDITOR set to neovim.
-- **User packages** (80+): fastfetch, neovim, btop, gcc, git, ripgrep, fd, kitty, wofi, waybar, awww (wallpaper daemon), hyprshot, wl-clipboard, brightnessctl, pamixer, swappy, grim, slurp, mako, hyprlock, hypridle, cliphist, starship, tree, bat, wlogout, playerctl, qt6ct, polkit_gnome, pavucontrol, networkmanagerapplet, brave, vscode, libmtp, mtpfs, jmtpfs, imv, mpv, catppuccin-gtk, bibata-cursors, hyprpicker, wf-recorder, sddm-astronaut, wofi-emoji, file-roller, sops, age, ssh-to-age, qbittorrent, proton-vpn, fzf, zoxide, lazygit, ffmpeg, obs-studio, mission-center, nix-output-monitor, nil (Nix LSP), nixpkgs-fmt, cava, appimage-run, yt-dlp, nix-tree, nix-index, comma, jq, yq, tmux, wireshark, nmap, dnsutils, imagemagick, sox, handbrake, zathura, kdenlive, inkscape, audacity.
+- **User packages**: fastfetch, neovim, btop, gcc, git, ripgrep, fd, unzip, unrar, opencode (AI coding assistant), gnumake, curl, kitty, wofi, waybar, awww (wallpaper daemon), hyprshot, wl-clipboard, brightnessctl, pamixer, swappy, grim, slurp, swaynotificationcenter, hyprlock, hypridle, cliphist, starship, tree, bat, wlogout, playerctl, qt6ct, polkit_gnome, pavucontrol, networkmanagerapplet, brave, libmtp, jmtpfs, imv, mpv, bibata-cursors, hyprpicker, wf-recorder, wofi-emoji, file-roller, sops, age, ssh-to-age, qbittorrent, proton-vpn, fzf, zoxide, lazygit, ffmpeg, obs-studio, nix-output-monitor, nil (Nix LSP), nixpkgs-fmt, cava, appimage-run, yt-dlp, nix-tree, nix-index, comma, jq, yq, tmux, wireshark, nmap, dnsutils, imagemagick, sox, zathura, kdenlive, inkscape, audacity, typora, discord.
 - **Cursor**: Bibata-Modern-Classic, size 24, linked to GTK.
-- **Desktop entries**: six Brave-based web application shortcuts for Gemini, Discord, Instagram, NotebookLM, YouTube Music, and WhatsApp, each with an isolated `--user-data-dir`.
+- **Desktop entries**: Brave-based web application shortcuts for Gemini, Instagram, NotebookLM, YouTube Music, and WhatsApp, each running as a dedicated Brave app with an isolated `--user-data-dir`.
 - **Yazi config**: opens all files in neovim.
 - **Swappy config**: saves screenshots to `~/Pictures/Screenshots` with a timestamped filename format.
 - **Thunar volman**: auto-mount drives and media.
@@ -267,7 +300,7 @@ Comprehensive MIME type associations (~100 entries) across all media types:
 - **Browser**: Brave for HTTP/HTTPS/FTP/mailto schemes and text/html.
 - **File manager**: Thunar for inode/directory.
 - **Terminal**: Kitty for terminal scheme.
-- **Text/code**: neovim for plain text, markdown, CSV, all common programming languages, config formats (JSON, TOML, YAML), markup (HTML, XML, TeX, CSS, Dockerfile, Makefile, diff, log).
+- **Text/code**: neovim for plain text, CSV, all common programming languages, config formats (JSON, TOML, YAML), markup (HTML, XML, TeX, CSS, Dockerfile, Makefile, diff, log); Typora for Markdown.
 - **Documents**: zathura for PDF, PostScript, RTF, EPUB.
 - **Images**: imv for common raster formats (PNG, JPEG, WebP, GIF, BMP, TIFF, TGA, ICO, PPM/PGM/PBM); Inkscape for SVG; GIMP for layered formats (XCF, PSD).
 - **Video**: mpv for MP4, WebM, MKV, AVI, MPEG, QuickTime, Flash, WMV, Ogg, 3GP, M2T, M4V, FLIC.
@@ -317,8 +350,9 @@ The largest module (approximately 250 lines), containing the full Hyprland compo
 **Environment variables**:
 
 - Cursor theme (Bibata-Modern-Classic, size 24).
-- Qt dark mode via `QT_QPA_PLATFORMTHEME=qt6ct`.
-- Editor set to neovim.
+- Qt dark mode via `QT_QPA_PLATFORMTHEME=qt6ct` and no Qt window decorations.
+- Editor set to neovim (`EDITOR`/`VISUAL`/`YAZI_EDITOR`).
+- GDK backend prefers Wayland, falls back to X11 (`GDK_BACKEND=wayland,x11`).
 - Wayland backend for Electron apps (`NIXOS_OZONE_WL=1`).
 
 **Window rules**:
@@ -332,7 +366,7 @@ The largest module (approximately 250 lines), containing the full Hyprland compo
 
 **Autostart**:
 
-- awww wallpaper daemon, Waybar, Mako notifications.
+- awww wallpaper daemon, Waybar, swaync (notification center).
 - cliphist clipboard history daemon (text and image).
 - Polkit authentication agent.
 
@@ -341,7 +375,7 @@ The largest module (approximately 250 lines), containing the full Hyprland compo
 - Application launchers (terminal, browser, file manager, Obsidian).
 - Emoji picker (wofi-emoji).
 - Keybind reference viewer.
-- Web application shortcuts (6 Brave PWAs).
+- Web application shortcuts (5 Brave PWAs).
 - Screenshots (region, output, window) with swappy editing.
 - Screen recording toggle.
 - Workspace navigation and window movement.
@@ -448,15 +482,15 @@ Wofi application launcher and wallpaper picker configuration:
 
 Background services managed by Home Manager:
 
-- **Mako notifications**: Catppuccin Mocha themed (dark background, mauve border), 5-second default timeout, 350x120 max size, top-right anchor, overlay layer, grouped by category.
+- **Sway Notification Center (swaync)**: replacements for Mako, Catppuccin Mocha themed (dark background, mauve borders/accents, rounded), 5s/3s/critical timeouts, right-top anchored control center with title, do-not-disturb toggle, notification list, and a buttons grid (toggle DND, toggle center, clear all). Styled via a full CSS block using JetBrainsMono Nerd Font.
 - **direnv**: enabled with nix-direnv for per-directory environment loading.
-- **Battery monitor**: systemd timer running every 3 minutes. Checks if the battery is discharging below 20% and the power profile is not already power-saver; if so, switches to power-saver and shows a critical notification.
+- **Battery monitor**: shell script + systemd user timer running every 3 minutes. Checks if the battery is discharging below 20% and the power profile is not already power-saver; if so, switches to power-saver and shows a critical notification.
 - **Hypridle**: idle management daemon with three stages:
   - 5 minutes: lock screen.
   - 10 minutes: DPMS display off.
   - 30 minutes: system suspend.
 - **SSH agent**: enabled for key-based authentication.
-- **Voxtype**: systemd user service for push-to-talk speech-to-text. Uses the Vulkan-accelerated Voxtype daemon with auto-restart on failure. Includes a watchdog timer checking every 2 minutes. Configuration uses the base.en Whisper model, 16 kHz sample rate, 60-second max duration, 6 threads, with output typed directly (clipboard fallback), and notifications for recording start, stop, and transcription events.
+- **Voxtype**: systemd user service for push-to-talk speech-to-text. Uses the Vulkan-accelerated Voxtype daemon with auto-restart on failure and a watchdog timer checking every 2 minutes. Configuration uses the base.en Whisper model, 16 kHz sample rate, 60-second max duration, 6 threads, with output typed directly (clipboard fallback), and notifications for recording start, stop, and transcription events.
 
 ---
 
@@ -486,11 +520,11 @@ All bindings use the Super (Windows) modifier unless noted otherwise.
 | Key | Application |
 |---|---|
 | Super + A | Gemini (Brave PWA) |
-| Super + D | Discord (Brave PWA) |
 | Super + I | Instagram (Brave PWA) |
 | Super + N | NotebookLM (Brave PWA) |
 | Super + Shift + Y | YouTube Music (Brave PWA) |
 | Super + Shift + W | WhatsApp (Brave PWA) |
+| Super + D | Discord (native app) |
 
 ### Window Management
 
@@ -570,6 +604,16 @@ While in resize mode (entered via Super + R):
 | Super + Escape | Open power menu (shutdown, reboot, lock, logout) |
 | Super + Shift + L | Turn off displays (DPMS) |
 | Super + Alt + R | Reload Hyprland configuration |
+| Super + Shift + V | Open clipboard history (cliphist -> wofi -> wl-copy) |
+| Super + Ctrl + N | Toggle notification center (swaync) |
+
+### Mouse Bindings
+
+| Gesture | Action |
+|---|---|
+| Super + Drag (left) | Move window |
+| Super + Drag (right) | Resize window |
+| Super + Scroll up/down | Previous/next workspace |
 
 ---
 

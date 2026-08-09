@@ -16,14 +16,26 @@
   outputs = { self, nixpkgs, home-manager, areofyl-fetch, sops-nix, ... }@inputs:
     let
       vars = import ./vars.nix;
-    in {
-      nixosConfigurations.${vars.hostname} = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
+      pkgs = nixpkgs.legacyPackages.${system};
+    in {
+      packages.${system}.purge = pkgs.callPackage ./sys-modules/purge.nix { };
+
+      overlays.${system} = final: prev: {
+        purge = final.callPackage ./sys-modules/purge.nix { };
+      };
+
+      nixosConfigurations.${vars.hostname} = nixpkgs.lib.nixosSystem {
+      system = system;
       
       specialArgs = { inherit inputs vars; };
       modules = [
         ./configuration.nix
-        
+
+        ({ ... }: {
+          nixpkgs.overlays = [ self.overlays.${system} ];
+        })
+
         home-manager.nixosModules.home-manager
         {
           home-manager.useGlobalPkgs = true;
