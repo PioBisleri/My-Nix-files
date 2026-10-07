@@ -29,7 +29,6 @@ The configuration is split into two layers: system-level NixOS modules under `sy
 - **Dedicated gaming module** with 32-bit graphics support, Gamemode, MangoHud overlay, Gamescope micro-compositor, Lutris game manager, winetricks, and ProtonUP-Qt, plus kernel optimizations for modded games.
 - **Comprehensive MIME associations** covering browser, terminal, code editors, documents, images, video, audio, archives, torrents, and AppImage files.
 - **Purge TUI** — a Catppuccin Mocha disk cleaner with Storage, Memory, Processes, and Logs tabs, built as a self-contained Nix derivation that embeds its own Rust sources (see `sys-modules/purge.nix`).
-- **ZeroTier VPN** — client daemon that auto-joins a private network set in `vars.zerotierNetwork` (see `sys-modules/zerotier.nix`).
 
 ---
 
@@ -65,7 +64,6 @@ The configuration is split into two layers: system-level NixOS modules under `sy
 |   |-- thunar.nix                    # Thunar file manager, MTP udev rules
 |   |-- secrets.nix                   # sops-nix system-level secret module
 |   |-- purge.nix                     # Self-contained Purge TUI with embedded Rust sources
-|   |-- zerotier.nix                  # ZeroTier VPN client (joins vars.zerotierNetwork)
 |
 |-- hm-modules/                       # User-level Home Manager modules
     |-- packages.nix                  # User packages, cursor, desktop entries, Yazi config
@@ -106,7 +104,7 @@ sudo nixos-rebuild switch --flake /etc/nixos#nixos
 
 ### For a new user or machine
 
-1. Edit `vars.nix` to set your own username, hostname, timezone, full name, and email.
+1. Edit `vars.nix` (shipped as a placeholder template) to set your own username, hostname, timezone, full name, and email.
 2. Generate a hardware configuration:
    ```bash
    nixos-generate-config --show-hardware-config > /etc/nixos/hardware-configuration.nix
@@ -138,19 +136,17 @@ sudo nix optimise-store
 
 ### vars.nix
 
-A single file holding all user-specific values. Edit this file to adapt the configuration to a different user or machine.
+A single file holding all user-specific values. `vars.nix` is committed as a placeholder template — edit it to adapt the configuration to your user or machine.
 
 | Variable   | Default         | Description                     |
 |------------|-----------------|---------------------------------|
-| username   | `"veer"`        | POSIX username for the primary user account |
+| username   | `"you"`        | POSIX username for the primary user account |
 | hostname   | `"nixos"`       | System hostname                 |
-| timezone   | `"Asia/Kolkata"` | System timezone (IANA format)   |
-| fullName   | `"Veer"`        | User's full name for account description and Git |
-| email      | `"veer@nixos"`  | Email address for Git commits   |
-| zerotierNetwork | `"PUT_IN_THE_HEX_CODE"` | 16-hex-digit ZeroTier network ID auto-joined at boot |
+| timezone   | `"Asia/Kolkata"` (example) | System timezone (IANA format)   |
+| fullName   | `"Your Name"`        | User's full name for account description and Git |
+| email      | `"you@example.com"`  | Email address for Git commits   |
 
 These values are injected into both NixOS and Home Manager modules via `specialArgs` and `extraSpecialArgs` in `flake.nix`.
-`zerotierNetwork` is consumed by `sys-modules/zerotier.nix`.
 
 The configuration uses an ed25519 SSH key (`~/.ssh/id_ed25519`) converted to an age key for sops-nix secret decryption.
 
@@ -270,12 +266,6 @@ A self-contained Purge TUI disk cleaner, shipped as a single Nix file that gener
   ```
   The embedded Rust sources can be edited directly in the module; no generator is required.
 
-#### zerotier.nix
-
-Configures the ZeroTier VPN client:
-
-- **`services.zerotierone.enable`**: starts the ZeroTier daemon.
-- **`joinNetworks`**: auto-joins the network ID from `vars.zerotierNetwork`. Set it in `vars.nix` to the 16-hex-digit network (default is a "PUT_IN_THE_HEX_CODE" placeholder).
 
 ---
 
