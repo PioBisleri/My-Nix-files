@@ -1,4 +1,4 @@
-{ config, pkgs, vars, ... }: {
+{ config, pkgs, pkgs-unstable, vars, ... }: {
 
   home.sessionVariables = {
     EDITOR = "nvim";
@@ -6,6 +6,7 @@
 
   home.packages = with pkgs; [
     fastfetch              # Fast system info display
+    vim                    # Linux text editor
     neovim                 # Modern Vim fork with Lua plugin architecture
     btop                   # Resource monitor with GPU/disk stats
     gcc                    # GNU C/C++ compiler collection
@@ -14,7 +15,8 @@
     fd                     # Fast user-friendly find alternative
     unzip                  # Extract ZIP archives
     unrar                  # Extract RAR archives
-    opencode               # AI coding assistant for terminal
+    pkgs-unstable.opencode # AI coding assistant for terminal (v18.18 from unstable)
+    pkgs-unstable.vscodium # Open source source code editor developed by Microsoft for Windows, Linux and macOS (VS Code without MS branding/telemetry/licensing)
     gnumake                # Build automation tool
     curl                   # Data transfer with URL syntax
     kitty                  # GPU-accelerated terminal emulator
@@ -84,6 +86,7 @@
     audacity               # Sound editor with graphical UI
     typora                 # A minimal Markdown editor and reader
     discord                # All-in-one cross-platform voice and text chat for gamers
+    scrcpy                 # Display and control Android devices over USB or TCP/IP
   ];
 
   home.pointerCursor = {

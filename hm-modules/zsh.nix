@@ -66,12 +66,6 @@
       gd = "git diff";
       gco = "git checkout";
       gb = "git branch";
-
-      mcs = "mc status";
-      mcl = "mc logs";
-      mcstart = "mc start";
-      mcstop = "mc stop";
-
     };
 
     history = {

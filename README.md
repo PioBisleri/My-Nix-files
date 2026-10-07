@@ -1,4 +1,4 @@
-# NixOS Configuration
+
 
 A modular, flake-based NixOS configuration featuring a Hyprland compositor environment on Wayland with a cohesive Catppuccin Mocha theme across the entire desktop stack. Designed as a daily-driver setup for a personal laptop, with full support for audio, Bluetooth, printing, screen capture, clipboard management, speech-to-text, and text-to-speech.
 
